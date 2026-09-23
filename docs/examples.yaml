@@ -1,0 +1,151 @@
+# Example gallery skeleton: how the docs group and order the examples.
+# The example FILES live in each package's examples/ dir (kept in topic folders
+# for browsing); THIS file is the source of truth for the gallery. A ref is
+# "<package>: <name>" for an example in that section's folder, or
+# "<package>: <path>" (path from <package>/examples/) to cross-list one from
+# elsewhere. Examples present in a folder but not listed here sort to the end of
+# their section.
+
+tutorial:
+  - "01_hello_world.py"
+  - "02_tempo_change.py"
+  - "03_blocking_false.py"
+  - "04_play_chord.py"
+  - "05_random_durations_and_rests.py"
+  - "06_notation.py"
+  - "07_time_signature.py"
+  - "08_random_quantized.py"
+  - "09_simplified_quantization.py"
+  - "10_multi_part.py"
+  - "11_nested_tempi"
+  - "12_envelopes_basic.py"
+  - "13_envelopes_advanced.py"
+  - "14_gliss_from_envelope.py"
+  - "15_envelope_shorthand.py"
+  - "16_start_and_end_note.py"
+  - "17_volume_envelope.py"
+  - "18_microtonal.py"
+  - "19_playback_implementations.py"
+  - "20_note_properties.py"
+  - "21_pitch_spelling.py"
+  - "22_staff_text.py"
+  - "23_special_notations.py"
+  - "24_osc_to_supercollider"
+  - "25_MIDI_in_out.py"
+  - "26_keyboard_input.py"
+  - "27_mouse_input.py"
+  - "28_osc_listening"
+  - "29_spanners.py"
+
+topics:
+  "Time & clocks":
+    "Forking & simultaneity":
+      - scamp: "Tutorial/10_multi_part.py"
+      - scamp: "Tutorial/03_blocking_false.py"
+      - scamp: "Tutorial/04_play_chord.py"
+      - scamp: "chords_example.py"
+      - scamp_extensions: "Pitch/Pitch spelling/voice_leading.py"
+      - scamp: "guitar_arpeggios.py"
+      - scamp: "octave_lines.py"
+    "Setting & changing tempo":
+      - scamp: "Tutorial/02_tempo_change.py"
+      - scamp: "Composition & form/Larger-scale form/reich_piano_phase.py"
+      - scamp_extensions: "Composition & form/Larger-scale form/evolving_form"
+    "Advanced":
+      - scamp: "Tutorial/11_nested_tempi"
+      - scamp: "metric_phase.py"
+  "Pitch":
+    "Scales & microtonality":
+      - scamp_extensions: "scale_example"
+      - scamp: "Tutorial/18_microtonal.py"
+    "Pitch spelling":
+      - scamp: "Tutorial/21_pitch_spelling.py"
+      - scamp_extensions: "voice_leading.py"
+    "Glissando":
+      - scamp: "Tutorial/14_gliss_from_envelope.py"
+      - scamp: "Tutorial/15_envelope_shorthand.py"
+  "Envelopes":
+    "Construction":
+      - scamp: "Tutorial/12_envelopes_basic.py"
+      - scamp: "Tutorial/13_envelopes_advanced.py"
+    "As note parameters":
+      - scamp: "Tutorial/14_gliss_from_envelope.py"
+      - scamp: "Tutorial/15_envelope_shorthand.py"
+      - scamp: "Tutorial/17_volume_envelope.py"
+    "As compositional parameters":
+      - scamp_extensions: "Composition & form/Larger-scale form/evolving_form"
+      - scamp_extensions: "Composition & form/Larger-scale form/time_varying_parameter_example.py"
+  "Notation & engraving":
+    "Basics":
+      - scamp: "Tutorial/06_notation.py"
+      - scamp: "Tutorial/07_time_signature.py"
+      - scamp: "record_and_export_midi.py"
+    "Quantization":
+      - scamp: "Tutorial/08_random_quantized.py"
+      - scamp: "Tutorial/09_simplified_quantization.py"
+      - scamp: "quantization.py"
+      - scamp: "Composition & form/Larger-scale form/reich_piano_phase.py"
+    "Special notations":
+      - scamp: "Tutorial/20_note_properties.py"
+      - scamp: "Tutorial/22_staff_text.py"
+      - scamp: "Tutorial/23_special_notations.py"
+      - scamp: "Tutorial/29_spanners.py"
+      - scamp: "voices.py"
+      - scamp: "voices_with_octave_lines.py"
+      - scamp: "Tutorial/18_microtonal.py"
+      - scamp: "post_processing.py"
+    "Abjad & pymusicxml tweaks":
+      - scamp: "key_sig.py"
+      - scamp: "double_score.py"
+    "From live input":
+      - scamp: "keyboard_input_with_notation.py"
+      - scamp: "run_as_server_render_scores.py"
+  "Playback":
+    "Playback implementations":
+      - scamp: "Tutorial/19_playback_implementations.py"
+      - scamp: "Tutorial/24_osc_to_supercollider"
+      - scamp: "osc_playback"
+      - scamp_extensions: "multipreset_example.py"
+    "Note handles":
+      - scamp: "Tutorial/16_start_and_end_note.py"
+      - scamp: "Time & clocks/Forking & simultaneity/chords_example.py"
+    "Playback adjustments":
+      - scamp: "Tutorial/20_note_properties.py"
+      - scamp: "Tutorial/23_special_notations.py"
+    "MIDI CC & arbitrary parameters":
+      - scamp: "Notation & engraving/Basics/record_and_export_midi.py"
+      - scamp: "scamp_to_max_monophonic"
+      - scamp: "scamp_to_max_polyphonic"
+    "Other":
+      - scamp: "save_and_load_performance"
+  "Interactivity & visualization":
+    "Keyboard input":
+      - scamp: "Tutorial/26_keyboard_input.py"
+      - scamp: "Notation & engraving/From live input/keyboard_input_with_notation.py"
+      - scamp_extensions: "key_plane_example.py"
+    "Mouse input":
+      - scamp: "Tutorial/27_mouse_input.py"
+      - scamp_extensions: "Composition & form/Algorithmic approaches/indispensibility_example.py"
+    "MIDI input":
+      - scamp: "Tutorial/25_MIDI_in_out.py"
+      - scamp: "midi_keyboard_mapper.py"
+    "Responding to a GUI":
+      - scamp: "qt_interactive.py"
+    "Visualization":
+      - scamp_extensions: "Composition & form/Algorithmic approaches/conway.py"
+      - scamp_extensions: "Composition & form/Larger-scale form/evanstein_barlicity.py"
+      - scamp_extensions: "Composition & form/Larger-scale form/leaf_loops.py"
+    "Graphic notation":
+      - scamp_extensions: "note_graph_example.py"
+  "Composition & form":
+    "Algorithmic approaches":
+      - scamp_extensions: "conway.py"
+      - scamp_extensions: "l_system_example.py"
+      - scamp_extensions: "indispensibility_example.py"
+    "Larger-scale form":
+      - scamp_extensions: "leaf_loops.py"
+      - scamp: "reich_piano_phase.py"
+      - scamp_extensions: "evanstein_barlicity.py"
+      - scamp_extensions: "evolving_form"
+      - scamp_extensions: "time_varying_parameter_example.py"
+      - scamp: "evanstein_lunar_trajectories.py"

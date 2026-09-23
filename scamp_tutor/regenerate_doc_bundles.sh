@@ -16,7 +16,7 @@ set -euo pipefail
 
 here="$(cd "$(dirname "$0")" && pwd)"
 repo="$(cd "$here/.." && pwd)"
-docs="$repo/scamp/docs"
+docs="$repo/docs"
 text="$docs/build_text"
 
 # 1. Render docs to plaintext (autodoc expanded, no HTML bulk).

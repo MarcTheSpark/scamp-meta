@@ -14,7 +14,7 @@ USER="${SCAMP_DEPLOY_USER:?set SCAMP_DEPLOY_USER (or add it to deploy.local.sh)}
 HOST="${SCAMP_DEPLOY_HOST:?set SCAMP_DEPLOY_HOST (or add it to deploy.local.sh)}"
 REMOTE_DIR="${SCAMP_DEPLOY_REMOTE_DIR:-scamp.marcevanstein.com}"
 
-LOCAL_DIR="$SCRIPT_DIR/scamp/docs_build"
+LOCAL_DIR="$SCRIPT_DIR/docs_build"
 
 if [[ ! -d "$LOCAL_DIR" ]]; then
     echo "Local docs dir not found: $LOCAL_DIR" >&2

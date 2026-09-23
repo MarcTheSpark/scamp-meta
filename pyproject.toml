@@ -22,6 +22,7 @@ dev = [
   "sphinx-rtd-theme",
   "sphinx-copybutton",
   "verovio",
+  "pyyaml",
 ]
 
 [tool.uv.workspace]
