@@ -1,0 +1,35 @@
+[project]
+name = "scamp-workspace"
+version = "0"
+requires-python = ">=3.12"
+dependencies = [
+  "matplotlib",
+  "scamp[all]",
+  "scamp_extensions[engraving]",
+  "setuptools>=82.0.1",
+  "pynput",
+  "scikit-learn>=1.9.0",
+  "pyqt5>=5.15.11",
+  "pygame>=2.6.1",
+  "shapely>=2.1.2",
+]
+
+[dependency-groups]
+dev = [
+  "build",
+  "twine",
+  "keyring",
+  "sphinx-rtd-theme",
+  "sphinx-copybutton",
+  "verovio",
+]
+
+[tool.uv.workspace]
+members = ["clockblocks", "expenvelope", "pymusicxml", "scamp", "scamp_extensions"]
+
+[tool.uv.sources]
+clockblocks = { workspace = true }
+expenvelope = { workspace = true }
+pymusicxml = { workspace = true }
+scamp = { workspace = true }
+scamp_extensions = { workspace = true }

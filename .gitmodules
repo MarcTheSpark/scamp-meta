@@ -1,0 +1,20 @@
+[submodule "clockblocks"]
+	path = clockblocks
+	url = https://github.com/MarcTheSpark/clockblocks.git
+	branch = main
+[submodule "expenvelope"]
+	path = expenvelope
+	url = https://github.com/MarcTheSpark/expenvelope.git
+	branch = main
+[submodule "pymusicxml"]
+	path = pymusicxml
+	url = https://github.com/MarcTheSpark/pymusicxml.git
+	branch = main
+[submodule "scamp"]
+	path = scamp
+	url = https://github.com/MarcTheSpark/scamp.git
+	branch = main
+[submodule "scamp_extensions"]
+	path = scamp_extensions
+	url = https://github.com/MarcTheSpark/scamp_extensions.git
+	branch = main

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SCAMP AI Tutor</title>
+  <link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura.css" media="screen">
+  <link rel="stylesheet" href="https://unpkg.com/sakura.css/css/sakura-dark.css" media="screen and (prefers-color-scheme: dark)">
+  <style>
+    .prompt { position: relative; }
+    .prompt button {
+      position: absolute; top: 0.5rem; right: 0.5rem;
+      font-size: 0.75rem; padding: 0.2rem 0.6rem; margin: 0;
+    }
+    pre code { white-space: pre-wrap; }
+    .fill { font-style: italic; opacity: 0.7; }
+  </style>
+</head>
+<body>
+  <h1>SCAMP AI Tutor</h1>
+
+  <p>
+    A do-it-yourself tutor for
+    <a href="http://scamp.marcevanstein.com">SCAMP</a> (Suite for
+    Computer-Assisted Music in Python). It works with whatever AI assistant you
+    already use — Claude, ChatGPT, Gemini, or anything that can read a web page.
+  </p>
+
+  <p>
+    There's nothing to install. You just paste a short prompt that points the
+    assistant at a set of instructions and the full SCAMP documentation and
+    examples, all hosted here. The tutor is built to help you <em>understand and
+    own</em> what you make — not to write your piece for you.
+  </p>
+
+  <h2>How to use it</h2>
+  <p>
+    Copy the prompt below into a fresh chat with your AI assistant. Replace the
+    three numbers with your own experience levels (1&nbsp;=&nbsp;none,
+    10&nbsp;=&nbsp;expert) so it can pitch explanations at the right level, then
+    start asking it to help you make music.
+  </p>
+
+  <div class="prompt">
+    <button type="button" onclick="copyPrompt()">Copy</button>
+<pre><code id="prompt-text">Read https://raw.githubusercontent.com/MarcTheSpark/scamp-meta/main/scamp_tutor/instructions.txt. I want you to be my SCAMP tutor, using the instructions and resources described there. On a scale from 1-10, my experience levels are as follows: coding 5, python 4, music theory 7, scamp libraries 2.</code></pre>
+  </div>
+
+  <p class="fill">
+    Tip: adjust <code>coding</code>, <code>python</code>,
+    <code>music theory</code>, and <code>scamp libraries</code> to match you. Be
+    honest — it only changes how much gets explained, never what you're allowed
+    to do.
+  </p>
+
+  <h2>What's here</h2>
+  <p>
+    The assistant fetches these as needed; you don't have to open them yourself.
+  </p>
+  <ul>
+    <li><a href="instructions.txt">instructions.txt</a> — the tutor's instructions and a map of the resources below.</li>
+    <li><a href="stumblingBlocks.txt">stumblingBlocks.txt</a> — required reading for the assistant: SCAMP facts that AIs commonly get wrong.</li>
+    <li><a href="docs/">docs/</a> — the SCAMP documentation, one text file per package.</li>
+    <li><a href="examples/">examples/</a> — real, runnable SCAMP example scripts, plus an index.</li>
+  </ul>
+
+  <script>
+    function copyPrompt() {
+      const text = document.getElementById('prompt-text').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('.prompt button');
+        const original = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = original; }, 1500);
+      });
+    }
+  </script>
+</body>
+</html>

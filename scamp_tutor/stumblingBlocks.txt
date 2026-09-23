@@ -1,0 +1,174 @@
+====================================================================
+SCAMP STUMBLING BLOCKS — non-obvious facts an AI assistant gets wrong
+====================================================================
+Read this before writing or explaining SCAMP code. Every item here is
+a real trap: either the API differs from what you'd guess, or it
+differs from older SCAMP versions you may have seen in training data.
+
+--------------------------------------------------------------------
+1. TIMING AND BLOCKING
+--------------------------------------------------------------------
+- play_note() BLOCKS BY DEFAULT (blocking=True). It advances musical
+  time by the note's length. Consequences:
+    * A sequential melody needs NO wait() between notes — the
+      play_note calls themselves advance time.
+    * Overlapping layers (e.g. a drum machine with kick + snare + hats
+      on one part) need blocking=False plus explicit wait(), or
+      separate forked functions.
+  WRONG (assumes non-blocking, plays 3x too slow):
+      drums.play_note(36, 1, 0.25); drums.play_note(42, 1, 0.25); wait(0.25)
+  RIGHT (step sequencer on one part):
+      for step in range(16):
+          if kick[step]:  drums.play_note(36, 1, 0.1, blocking=False)
+          if snare[step]: drums.play_note(38, 1, 0.1, blocking=False)
+          wait(0.25)
+
+- wait(x) is in BEATS, not seconds (identical only at the default
+  tempo). For literal seconds: wait(x, units="time"). Never use
+  time.sleep() — it desynchronizes the clock system.
+
+- Default tempo is 60 BPM (1 beat = 1 second), NOT 120. Set with
+  Session(tempo=100) or s.tempo = 100.
+
+- Gradual tempo change: the second argument of set_tempo_target /
+  set_rate_target must be a Moment — a bare number is REJECTED
+  (older SCAMP accepted one; current raises an error):
+      WRONG: s.set_tempo_target(100, 9)
+      RIGHT: s.set_tempo_target(100, Moment.after_beats(9))
+  Similarly fork(..., when=...) requires a Moment, not a number.
+
+- When the script's last line runs, sound stops. So:
+    * after fork(...):  s.wait_for_children_to_finish()
+    * after blocking=False notes:
+          while inst.num_notes_playing() > 0: wait(1)
+    * callback-driven scripts (MIDI/keyboard/mouse/OSC input):
+          s.wait_forever()
+  This is no longer silent: anything still running when a clock winds down
+  gets cut off, with a logged warning naming what it cut off
+  (e.g. "a note on 'clarinet' that was still sounding"). The same applies
+  inside a forked function whose own sub-forks outlive it. Answer it with
+  wait_for_children_to_finish() to let them play out, or with
+  terminate_forked_children() to end them on purpose — either one resolves it.
+
+- fork() does NOT pass the child clock as the forked function's first
+  argument (older SCAMP tutorials and videos show it doing so —
+  that changed). Write def my_part(): with no clock parameter and
+  call current_clock() inside if you need the child clock.
+  Extra arguments go through a tuple: fork(my_part, args=(60,)).
+
+- s.beat() and s.time() are methods — call them: while s.beat() < 8.
+
+--------------------------------------------------------------------
+2. THE play_note CALL
+--------------------------------------------------------------------
+- Argument order: pitch, volume, length. The keyword is `length`,
+  NOT `duration`. Length is in beats.
+- Volume runs 0 to 1, not 0-127.
+- Pitch is a MIDI number; floats give microtones and just work
+  (64.7 = F4 thirty cents flat). pitch=None is a rest.
+- A LIST as the pitch argument is a GLISSANDO (envelope shorthand),
+  NOT a chord:
+      piano.play_note([60, 64, 67], 1, 2)   # slides C->E->G  (gliss!)
+      piano.play_chord([60, 64, 67], 1, 2)  # plays a C major chord
+- A tuple as length = tied segments (notational split), not a chord
+  or multiple notes.
+
+--------------------------------------------------------------------
+3. INSTRUMENT PRESETS — new_part() NAME MATCHING
+--------------------------------------------------------------------
+new_part(name) fuzzy-matches the name against preset names in the
+bundled General MIDI soundfont (Merlin.sf2). If nothing matches well
+it silently falls back to PIANO (only a logged warning). A wrong but
+plausible match produces no warning at all — just a console line
+"Using preset X for Y". Always check that line, and when in doubt run
+s.print_default_soundfont_presets().
+
+DRUM KITS: kits live in bank 128 and are named after their style:
+    Standard (128,0) | Power (128,16) | TR 808 (128,25) |
+    Jazz (128,32) | Orchestra (128,48)
+"drums" does NOT get you a kit — it matches the melodic "Steel Drum"
+patch. Either name the kit or pass the bank/preset pair explicitly:
+    drums = s.new_part("power")                    # rock/power kit
+    drums = s.new_part("drums", preset=(128, 0))   # standard kit
+On a kit part, PITCH selects the percussion sound (GM drum map):
+    36 kick, 38 snare, 37 side stick, 39 clap, 42 closed hi-hat,
+    44 pedal hi-hat, 46 open hi-hat, 49 crash, 51 ride,
+    41/43/45/47/48/50 toms, 54 tambourine, 56 cowbell.
+One kit part plays the whole kit — don't make separate parts named
+"kick"/"snare"/"hi-hat" (those match Picked Bass, Seashore, and
+Shakuhachi respectively!).
+
+VERIFIED WRONG MATCHES (tested against the actual matching code) —
+name on the left silently gets the preset on the right:
+    "drums" / "drum set"  -> Steel Drum (melodic!)
+    "drum kit"            -> Taiko Drum (melodic!)
+    "snare"               -> Seashore
+    "hi-hat"              -> Shakuhachi
+    "percussion", "kick", "clap", "rock kit" -> piano fallback
+    "bass"                -> Brass (!)
+    "upright bass"        -> Brightness (synth pad!)
+    "double bass"         -> Fretless Bass
+    "electric bass"       -> Acoustic Bass
+    "acoustic guitar"     -> Acoustic Bass (!)
+    "muted guitar"        -> Steel Guitar
+    "12 string guitar"    -> Overdrive Guitar
+    "tremolo strings"     -> Pizzicato Strings
+    "synth pad"           -> Synth Bass 1
+    "rock organ" / "drawbar organ" -> Reed Organ
+    "rhodes"              -> piano fallback
+    "ukulele"             -> Tubular Bells
+    "mandolin"            -> Bandoneon
+    "claves"              -> Clavinet
+SAFE NAMES for those intentions:
+    bass -> "acoustic bass", "fingered bass", "picked bass",
+            "fretless bass", "slap bass", "synth bass"
+    double bass (orchestral) -> "contrabass"
+    guitar -> "nylon guitar", "steel guitar", "jazz guitar",
+              "clean guitar", "guitar mutes", "overdrive guitar",
+              "distortion guitar"
+    tremolo strings -> "tremolande"; also "strings", "slow strings",
+              "pizzicato strings"
+    electric piano -> "e piano"; organs -> "organ 1"/"organ 2"/
+              "organ 3"/"church organ"/"reed organ"
+    pads/leads -> use the exact GM-ish names: "warm pad", "halo pad",
+              "sweep pad", "square wave", "saw wave", "charang", ...
+Ordinary orchestral names (violin, viola, cello, flute, oboe,
+clarinet, bassoon, trumpet, horn, trombone, tuba, timpani, harp,
+marimba, choir...) all match fine, even though the actual preset
+names are odd ("Violin LP3", "Flute Gold", "Bassoon (Rea)").
+Note there is NO bass clarinet, contrabassoon, or brush kit in the
+default soundfont — nearby substitutes get used without warning.
+
+--------------------------------------------------------------------
+4. ENVELOPES (gliss, dynamics, continuous parameters)
+--------------------------------------------------------------------
+- Envelope(levels, durations): durations has ONE FEWER element than
+  levels — they're segment lengths: Envelope([60, 72, 66], [2, 1]).
+- curve_shapes: positive = change happens late, negative = early.
+- List shorthand passed to play_note is STRETCHED to the note's
+  length; an explicit Envelope object is NOT (it runs on its own
+  timescale). Controlled by playback_settings.resize_parameter_envelopes.
+- A glissando is an envelope in the PITCH argument, not in properties.
+- For notes whose future is unknown (interactive input), use
+  start_note()/start_chord(), keep the returned handle, then
+  handle.change_pitch(target, time) / change_volume / end().
+  change_pitch takes an absolute target pitch, not a delta.
+
+--------------------------------------------------------------------
+5. NOTATION / TRANSCRIPTION
+--------------------------------------------------------------------
+- Call s.start_transcribing() BEFORE playing; s.stop_transcribing()
+  returns the Performance. Then performance.to_score(...).show()
+  (LilyPond PDF, needs abjad + LilyPond) or .show_xml() (MusicXML).
+  Nothing is recorded unless transcribing was started first.
+- The properties argument (4th arg of play_note) parses bare strings
+  as articulations/notations/dynamics: "staccato" is an articulation.
+  For literal words on the score use "text: staccato".
+- Dynamics ("f", "pp") are notation only — they don't change playback
+  volume. Playback adjustments ("length * 1.2", "pitch + 12") are
+  playback only — they don't change notation, and they don't change
+  how long play_note blocks.
+- Spanners need a start AND a stop on actual notes: "start slur" ...
+  "stop slur".
+- Extra MIDI CC via properties: "param_10: 0.5" — values are
+  normalized 0-1 (scaled to 0-127), not raw MIDI values.

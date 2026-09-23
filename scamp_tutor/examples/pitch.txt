@@ -1,0 +1,131 @@
+
+
+======================================================================
+=== FILE: Pitch/Pitch spelling/voice_leading.py
+======================================================================
+
+"""
+SCAMP Example: Voice Leading / spelling policy
+
+Rule-based four-part voice leading over a scale, spelled in E major via the `default_spelling_policy` argument.
+"""
+
+from scamp import *
+from scamp_extensions.pitch import Scale
+
+s = Session()
+
+piano_treb = s.new_part("piano", clef_preference="treble", default_spelling_policy="E major")
+piano_bass = s.new_part("piano", clef_preference="bass", default_spelling_policy="E major")
+
+scl = Scale.major(64)
+
+bass_line = [-7, -6, -5, -9, -10, -12, -13, -10, -14]
+
+upper_parts = [-3, 0, 2]
+
+last_bass_degree = None
+
+def check_chord_tone(interval_with_bass):
+    return interval_with_bass % 7 in (0, 2, 4)
+
+def move_upper_parts(old_bass_note, new_bass_note):
+    bass_motion = new_bass_note - old_bass_note
+    bass_motion_mod = bass_motion % 7
+
+    if bass_motion_mod == 0:
+        return
+    elif bass_motion_mod in [1, 6]:
+        # stepwise motion
+        # move to nearest consonance in opposite motion to bass
+        direction_to_move = -1 if bass_motion > 0 else 1
+    elif bass_motion_mod in [2, 4]:
+        direction_to_move = -1
+    else:
+        direction_to_move = 1
+        
+    for i, p in enumerate(upper_parts):
+        while not check_chord_tone(p - new_bass_note):
+            p += direction_to_move
+        upper_parts[i] = p
+
+s.start_transcribing()
+for bass_degree in bass_line:
+    if last_bass_degree is not None:
+        move_upper_parts(last_bass_degree, bass_degree)
+    last_bass_degree = bass_degree
+    piano_bass.play_note(scl.degree_to_pitch(bass_degree), 1, 1, blocking=False)
+    piano_treb.play_chord(scl.degree_to_pitch(upper_parts), 1, 1)
+
+scl.transpose(4)
+
+for bass_degree in bass_line:
+    if last_bass_degree is not None:
+        move_upper_parts(last_bass_degree, bass_degree)
+    last_bass_degree = bass_degree
+    piano_bass.play_note(scl.degree_to_pitch(bass_degree), 1, 1, "spelling: Ab major", blocking=False)
+    piano_treb.play_chord(scl.degree_to_pitch(upper_parts), 1, 1, "spelling: Ab major")
+
+s.stop_transcribing().to_score().show()
+
+======================================================================
+=== FILE: Pitch/Scales & microtonality/scale_example/scale_example.py
+======================================================================
+
+"""
+SCAMP Example: Scales
+
+Demo of the scamp_extensions Scale object, a highly flexible representation of a scale that can be indexed into
+infinitely in both directions from a root note. Scales can be microtonal (and even loaded from a scala file), and are
+constructed from intervals that can be expressed as either a frequency ratio, a distance in cents, or a combination
+of the two. Scales can also be transposed and modally rotated.
+"""
+
+#  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  #
+#  This file is part of SCAMP (Suite for Computer-Assisted Music in Python)                      #
+#  Copyright © 2020 Marc Evanstein <marc@marcevanstein.com>.                                     #
+#                                                                                                #
+#  This program is free software: you can redistribute it and/or modify it under the terms of    #
+#  the GNU General Public License as published by the Free Software Foundation, either version   #
+#  3 of the License, or (at your option) any later version.                                      #
+#                                                                                                #
+#  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;     #
+#  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.     #
+#  See the GNU General Public License for more details.                                          #
+#                                                                                                #
+#  You should have received a copy of the GNU General Public License along with this program.    #
+#  If not, see <http://www.gnu.org/licenses/>.                                                   #
+#  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  #
+
+from scamp import *
+from scamp_extensions.pitch import Scale, ScaleType
+from fractions import Fraction
+
+s = Session(tempo=100)
+
+clarinet = s.new_part("clarinet")
+
+scales = {
+    "C blues": Scale.from_pitches([48, 51, 53, 54, 55, 58, 60]),
+    "Bb locrian": Scale.locrian(58),
+    "Microtonal example 1": Scale(ScaleType(26., 104., Fraction(3, 2), (600., Fraction(5, 4)), 2, (204., 2)), 55),
+    "C whole-half Octatonic": Scale.from_pitches([48, 50, 51]),
+    "C half-whole Octatonic": Scale.octatonic(48, whole_step_first=False),  # different means of construction
+    "C Melodic Minor": Scale.melodic_minor(48),
+    "D Acoustic": Scale.melodic_minor(50, modal_shift=3),  # the "acoustic" scale is a mode of the melodic minor
+    "Overtone Series": Scale(ScaleType(*(Fraction(n, 1) for n in range(2, 32))), 40, cycle=False),
+    "Microtonal example 2:": Scale.from_start_pitch_and_cent_or_ratio_intervals(
+        55, ["200.", "5/4", "200., 5/4", "3/2", "7/4", "2"]),
+    "Bohlen Pierce from Scala File": Scale.from_scala_file("bohlen_12.scl", 48)
+}
+
+scales["Bohlen Pierce Transposed"] = scales["Bohlen Pierce from Scala File"].transposed(7)
+
+for scale_name, scale in scales.items():
+    print("Playing notes of the {} scale.".format(scale_name))
+    for scale_degree in range(0, 16):
+        clarinet.play_note(scale[scale_degree], 1.0, 0.25)
+
+    print("Playing chords from the {} scale.".format(scale_name))
+    for scale_degree in range(0, 16):
+        clarinet.play_chord(scale[list(range(scale_degree, scale_degree + 5, 2))], 1.0, 0.25)

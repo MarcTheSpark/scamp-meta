@@ -1,0 +1,1930 @@
+
+
+======================================================================
+=== FILE: expenvelope/expenvelope.envelope.Envelope.txt
+======================================================================
+
+expenvelope.envelope.Envelope
+*****************************
+
+class expenvelope.envelope.Envelope(levels: Sequence = (0,), durations: Sequence[float] = (), curve_shapes: Sequence[float | str] = None, offset: float = 0)
+
+   Bases: "SavesToJSON"
+
+   Class representing a piece-wise exponential function. This class
+   was designed with musical applications in mind, with the intention
+   being to represent a continuously changing musical parameter over
+   time. For instance, an Envelope might be used to represent the
+   pitch curve of a glissando, or the volume curve of a forte-piano.
+
+   Parameters:
+      * **levels** -- the levels of the curve. These can be anything
+        that acts like a number. For instance, one could even use
+        numpy arrays as levels.
+
+      * **durations** -- the durations of the curve segments. (Should
+        have length one less than levels.)
+
+      * **curve_shapes** -- the curve shape values (optional, should
+        have length one less than levels). Generally these will be
+        floats, with the default of 0 representing linear change, > 0
+        representing late change, and < 0 representing early change.
+        It is also possible to use the string "exp" to produce
+        constant proportional change per unit time, so long as the
+        segment does not touch zero. Finally, strings containing
+        "exp", such as "exp ** 2 / 5" will be evaluated with the curve
+        shape required for exponential change being plugged in for the
+        variable "exp".
+
+      * **offset** -- starts curve from somewhere other than zero
+
+   Variables:
+      **segments** -- list of "EnvelopeSegment"s representing the
+      pieces of this envelope.
+
+   -[ Methods ]-
+
+   +------------+--------------------------------------------------------------------------------------------+
+   | "adsr"(att | Construct a standard attack/decay/sustain/release envelope                                 |
+   | ack_length |                                                                                            |
+   | , attack_l |                                                                                            |
+   | evel,      |                                                                                            |
+   | ...[,      |                                                                                            |
+   | ...])      |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "append_en | Extends this envelope by another one (shifted to start at the end of this one).            |
+   | velope"(en |                                                                                            |
+   | velope_to_ |                                                                                            |
+   | append)    |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "append_se | Append a segment to the end of the curve ending at level and lasting for duration.         |
+   | gment"(lev |                                                                                            |
+   | el,        |                                                                                            |
+   | duration[, |                                                                                            |
+   | ...])      |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "ar"(attac | Construct an attack/release envelope                                                       |
+   | k_length,  |                                                                                            |
+   | release_le |                                                                                            |
+   | ngth[,     |                                                                                            |
+   | ...])      |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "asr"(atta | Construct an attack/sustain/release envelope                                               |
+   | ck_length, |                                                                                            |
+   | sustain_le |                                                                                            |
+   | vel, ...[, |                                                                                            |
+   | ...])      |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "average_l | Returns the average value that the Envelope takes over the given range.                    |
+   | evel"([t_r |                                                                                            |
+   | ange])     |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "end_level | Ending value of the Envelope                                                               |
+   | "()        |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "end_time" | End of the domain on which this Envelope is defined.                                       |
+   | ()         |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "from_func | Constructs an Envelope that approximates an arbitrary function.                            |
+   | tion"(func |                                                                                            |
+   | tion[, dom |                                                                                            |
+   | ain_start, |                                                                                            |
+   | ...])      |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "from_leve | Construct an envelope from levels alone, normalized to the given length.                   |
+   | ls"(levels |                                                                                            |
+   | [, length, |                                                                                            |
+   | offset])   |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "from_leve | Construct an Envelope from levels, durations, and optionally curve shapes.                 |
+   | ls_and_dur |                                                                                            |
+   | ations"(le |                                                                                            |
+   | vels,      |                                                                                            |
+   | durations) |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "from_list | Construct an envelope from a list that can take a number of formats                        |
+   | "(construc |                                                                                            |
+   | tor_list)  |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "from_poin | Construct an envelope from points                                                          |
+   | ts"(*point |                                                                                            |
+   | s)         |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "from_segm | Create a new envelope from a list of "EnvelopeSegment"s.                                   |
+   | ents"(segm |                                                                                            |
+   | ents)      |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "get_durat | Tuple of all the segment lengths.                                                          |
+   | ions"([rou |                                                                                            |
+   | nded])     |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "get_upper | Given a lower integration bound, find the upper bound that will result in the desired      |
+   | _integrati | integral.                                                                                  |
+   | on_bound"( |                                                                                            |
+   | t1, desire |                                                                                            |
+   | d_area)    |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "insert"(t | Insert a curve point at time t, and set the shape of the curve into and out of it.         |
+   | , level[,  |                                                                                            |
+   | curve_shap |                                                                                            |
+   | e_in,      |                                                                                            |
+   | ...])      |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "insert_in | Insert another curve point at the given time, without changing the shape of the curve.     |
+   | terpolated |                                                                                            |
+   | "(t[, rela |                                                                                            |
+   | tive_toler |                                                                                            |
+   | ance])     |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "integrate | Get the definite integral under this Envelope from t1 to t2                                |
+   | _interval" |                                                                                            |
+   | (t1, t2)   |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "is_shifte | Determines if this segment is simply a shifted version of another segment                  |
+   | d_version_ |                                                                                            |
+   | of"(other[ |                                                                                            |
+   | , toleranc |                                                                                            |
+   | e])        |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "length"() | The length of the domain on which this Envelope is defined (end time minus start time).    |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "local_ext | Returns a list of the times where the curve changes direction.                             |
+   | rema"([inc |                                                                                            |
+   | lude_saddl |                                                                                            |
+   | e_points]) |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "max_absol | Returns the maximum absolute value of the slope over the entire Envelope.                  |
+   | ute_slope" |                                                                                            |
+   | ()         |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "max_level | Returns the highest value that the Envelope takes over the given range.                    |
+   | "([t_range |                                                                                            |
+   | ])         |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "min_level | Returns the lowest value that the Envelope takes over the given range.                     |
+   | "([t_range |                                                                                            |
+   | ])         |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "normalize | Stretch or squeeze the segments of this Envelope so that it has the desired total          |
+   | _to_durati | duration.                                                                                  |
+   | on"(desire |                                                                                            |
+   | d_duration |                                                                                            |
+   | [, ...])   |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "pop_segme | Remove and return the last segment of this Envelope.                                       |
+   | nt"()      |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "pop_segme | Remove and return the first segment of this Envelope.                                      |
+   | nt_from_st |                                                                                            |
+   | art"()     |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "prepend_e | Extends this envelope backwards by another one (shifted to end at the start of this one).  |
+   | nvelope"(e |                                                                                            |
+   | nvelope_to |                                                                                            |
+   | _prepend)  |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "prepend_s | Prepend a segment to the beginning of the curve, starting at level and lasting for         |
+   | egment"(le | duration.                                                                                  |
+   | vel,       |                                                                                            |
+   | duration[, |                                                                                            |
+   | ...])      |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "release"( | Construct an simple decaying envelope                                                      |
+   | duration[, |                                                                                            |
+   | start_leve |                                                                                            |
+   | l, curve_s |                                                                                            |
+   | hape])     |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "remove_se | Removes all segments after the given time (including a partial segment if t lands in the   |
+   | gments_aft | middle of a segment).                                                                      |
+   | er"(t)     |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "remove_se | Removes all segments before the given time (including a partial segment if t lands in the  |
+   | gments_bef | middle of a segment).                                                                      |
+   | ore"(t)    |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "scale_hor | Scales the domain of this Envelope by the specified amount.                                |
+   | izontal"(a |                                                                                            |
+   | mount)     |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "scale_ver | Scales the levels of this segment by the specified amount.                                 |
+   | tical"(amo |                                                                                            |
+   | unt)       |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "shift_hor | Shifts the domain of this Envelope by the specified amount.                                |
+   | izontal"(a |                                                                                            |
+   | mount)     |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "shift_ver | Shifts the levels of this Envelope the specified amount.                                   |
+   | tical"(amo |                                                                                            |
+   | unt)       |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "show_plot | Shows a plot of this Envelope using matplotlib.                                            |
+   | "([title,  |                                                                                            |
+   | resolution |                                                                                            |
+   | , ...])    |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "simplifie | Simplifies the envelope to only extrema and inflection points.                             |
+   | d"([use_cu |                                                                                            |
+   | rvature,   |                                                                                            |
+   | ...])      |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "split_at" | Splits the Envelope at one or several points and returns a tuple of the pieces             |
+   | (t[, chang |                                                                                            |
+   | e_original |                                                                                            |
+   | , zero_out |                                                                                            |
+   | _offsets]) |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "start_lev | Beginning value of the Envelope                                                            |
+   | el"()      |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "start_tim | Beginning of the domain on which this Envelope is defined.                                 |
+   | e"()       |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "value_at" | Get the value of this Envelope at the given time.                                          |
+   | (t[, from_ |                                                                                            |
+   | left])     |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+
+   -[ Inherited Methods ]-
+
+   +------------+--------------------------------------------------------------------------------------------+
+   | "duplicate | Returns a copy of this object by serializing to and from JSON.                             |
+   | "()        |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "json_dump | Dump this object as a JSON string.                                                         |
+   | s"()       |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "json_load | Load this object from a JSON string.                                                       |
+   | s"(s)      |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "load_from | Load this object from a JSON file with the given path.                                     |
+   | _json"(fil |                                                                                            |
+   | e_path)    |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "save_to_j | Save this object to a JSON file using the given path.                                      |
+   | son"(file_ |                                                                                            |
+   | path)      |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+
+   -[ Attributes ]-
+
+   +------------+--------------------------------------------------------------------------------------------+
+   | "curve_sha | Tuple of all the segment curve shapes.                                                     |
+   | pes"       |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "durations | Tuple of all the segment lengths.                                                          |
+   | "          |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "levels"   | Tuple of levels at all segment boundary points.                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "offset"   | Alias for "Envelope.start_time()".                                                         |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "times"    | Tuple of all the segment start times.                                                      |
+   +------------+--------------------------------------------------------------------------------------------+
+
+   classmethod from_segments(segments: Sequence[EnvelopeSegment]) -> T
+
+      Create a new envelope from a list of "EnvelopeSegment"s.
+
+      Parameters:
+         **segments** -- list of segments
+
+   classmethod from_levels_and_durations(levels: Sequence, durations: Sequence[float], curve_shapes: Sequence[float | str] = None, offset: float = 0) -> T
+
+      Construct an Envelope from levels, durations, and optionally
+      curve shapes.
+
+      Parameters:
+         * **levels** -- the levels of the curve. These can be
+           anything that acts like a number. For instance, one could
+           even use numpy arrays as levels.
+
+         * **durations** -- the durations of the curve segments.
+           (Should have length one less than levels.)
+
+         * **curve_shapes** -- the curve shape values (optional,
+           should have length one less than levels). Generally these
+           will be floats, with the default of 0 representing linear
+           change, > 0 representing late change, and < 0 representing
+           early change. It is also possible to use the string "exp"
+           to produce constant proportional change per unit time, so
+           long as the segment does not touch zero. Finally, strings
+           containing "exp", such as "exp ** 2 / 5" will be evaluated
+           with the curve shape required for exponential change being
+           plugged in for the variable "exp".
+
+         * **offset** -- starts curve from somewhere other than zero
+
+      Returns:
+         an Envelope constructed accordingly
+
+   classmethod from_levels(levels: Sequence, length: float = 1.0, offset: float = 0) -> T
+
+      Construct an envelope from levels alone, normalized to the given
+      length.
+
+      Parameters:
+         * **levels** -- the levels of the curve. These can be
+           anything that acts like a number. For instance, one could
+           even use numpy arrays as levels.
+
+         * **length** -- the total length of the curve, divided evenly
+           amongst the levels
+
+         * **offset** -- starts curve from somewhere other than zero
+
+      Returns:
+         an Envelope constructed accordingly
+
+   classmethod from_list(constructor_list: Sequence) -> T
+
+      Construct an envelope from a list that can take a number of
+      formats
+
+      Parameters:
+         **constructor_list** -- Either a flat list that just contains
+         levels, or a list of lists either of the form [levels_list,
+         total_duration], [levels_list, durations_list] or
+         [levels_list, durations_list, curve_shape_list] for example:
+         - an input of [1, 0.5, 0.3] is interpreted as evenly spaced
+         levels with a total duration of 1 - an input of [[1, 0.5,
+         0.3], 3.0] is interpreted as levels and durations with a
+         total duration of e.g. 3.0 - an input of [[1, 0.5, 0.3],
+         [0.2, 0.8]] is interpreted as levels and durations - an input
+         of [[1, 0.5, 0.3], [0.2, 0.8], [2, 0.5]] is interpreted as
+         levels, durations, and curvatures
+
+      Returns:
+         an Envelope constructed accordingly
+
+   classmethod from_points(*points: Sequence) -> T
+
+      Construct an envelope from points
+
+      Parameters:
+         **points** -- list of points, each of which is of the form
+         (time, value) or (time, value, curve_shape)
+
+      Returns:
+         an Envelope constructed accordingly
+
+   classmethod release(duration: float, start_level=1, curve_shape: float | str = None) -> T
+
+      Construct an simple decaying envelope
+
+      Parameters:
+         * **duration** -- total decay length
+
+         * **start_level** -- level decayed from
+
+         * **curve_shape** -- shape of the curve (see documentation
+           for "Envelope.from_levels_and_durations()")
+
+      Returns:
+         an Envelope constructed accordingly
+
+   classmethod ar(attack_length: float, release_length: float, peak_level=1, attack_shape: float | str = None, release_shape: float | str = None) -> T
+
+      Construct an attack/release envelope
+
+      Parameters:
+         * **attack_length** -- rise time
+
+         * **release_length** -- release time
+
+         * **peak_level** -- level reached after attack and before
+           release (see documentation for
+           "Envelope.from_levels_and_durations()")
+
+         * **attack_shape** -- sets curve shape for attack portion of
+           the curve (see documentation for
+           "Envelope.from_levels_and_durations()")
+
+         * **release_shape** -- sets curve shape for release portion
+           of the curve (see documentation for
+           "Envelope.from_levels_and_durations()")
+
+      Returns:
+         an Envelope constructed accordingly
+
+   classmethod asr(attack_length: float, sustain_level, sustain_length: float, release_length: float, attack_shape: float | str = None, release_shape: float | str = None) -> T
+
+      Construct an attack/sustain/release envelope
+
+      Parameters:
+         * **attack_length** -- rise time
+
+         * **sustain_level** -- sustain level reached after attack and
+           before release
+
+         * **sustain_length** -- length of sustain portion of curve
+
+         * **release_length** -- release time
+
+         * **attack_shape** -- sets curve shape for attack portion of
+           the curve (see documentation for
+           "Envelope.from_levels_and_durations()")
+
+         * **release_shape** -- sets curve shape for release portion
+           of the curve (see documentation for
+           "Envelope.from_levels_and_durations()")
+
+      Returns:
+         an Envelope constructed accordingly
+
+   classmethod adsr(attack_length: float, attack_level, decay_length: float, sustain_level, sustain_length: float, release_length: float, attack_shape: float | str = None, decay_shape: float | str = None, release_shape: float | str = None) -> T
+
+      Construct a standard attack/decay/sustain/release envelope
+
+      Parameters:
+         * **attack_length** -- rise time
+
+         * **attack_level** -- level reached after attack before decay
+
+         * **decay_length** -- length of decay portion of the curve
+
+         * **sustain_level** -- sustain level reached after decay and
+           before release
+
+         * **sustain_length** -- length of sustain portion of curve
+
+         * **release_length** -- release time
+
+         * **attack_shape** -- sets curve shape for attack portion of
+           the curve (see documentation for
+           "Envelope.from_levels_and_durations()")
+
+         * **decay_shape** -- sets curve shape for decay portion of
+           the curve (see documentation for
+           "Envelope.from_levels_and_durations()")
+
+         * **release_shape** -- sets curve shape for release portion
+           of the curve (see documentation for
+           "Envelope.from_levels_and_durations()")
+
+      Returns:
+         an Envelope constructed accordingly
+
+   classmethod from_function(function: Callable[[float], float], domain_start: float = 0, domain_end: float = 1, scanning_step_size: float = 0.05, key_point_resolution_multiple: int = 2, iterations: int = 6, min_key_point_distance: float = 1e-07, start_from_zero=True) -> T
+
+      Constructs an Envelope that approximates an arbitrary function.
+      By default, the function is split at local extrema and
+      inflection points found through a pretty unsophisticated
+      numerical process.
+
+      Parameters:
+         * **function** -- a function from time to level (often a
+           lambda function)
+
+         * **domain_start** -- the beginning of the function domain
+           range to capture
+
+         * **domain_end** -- the end of the function domain range to
+           capture
+
+         * **scanning_step_size** -- when analyzing the function for
+           discontinuities, maxima and minima, inflection points,
+           etc., use this step size for the initial pass.
+
+         * **key_point_resolution_multiple** -- factor by which we add
+           extra key points between the extrema and inflection points
+           to improve the curve fit.
+
+         * **iterations** -- when a potential key point is found, we
+           zoom in and scan again in the viscinity of the point. This
+           determines how many iterations of zooming we do.
+
+         * **min_key_point_distance** -- after scanning for key
+           points, any that are closer than this distance are merged.
+
+         * **start_from_zero** -- if true, the envelope is shifted so
+           that it starts at time zero. Otherwise, it will have an
+           offset equal to *domain_start*
+
+      Returns:
+         an Envelope constructed accordingly
+
+   length() -> float
+
+      The length of the domain on which this Envelope is defined (end
+      time minus start time).
+
+   start_time() -> float
+
+      Beginning of the domain on which this Envelope is defined.
+
+   end_time() -> float
+
+      End of the domain on which this Envelope is defined.
+
+   start_level()
+
+      Beginning value of the Envelope
+
+   end_level()
+
+      Ending value of the Envelope
+
+   max_level(t_range: tuple[float, float] = None)
+
+      Returns the highest value that the Envelope takes over the given
+      range.
+
+      Parameters:
+         **t_range** -- tuple defining the start and end time of the
+         interval to check. If None, return the max level reached over
+         the entire Envelope.
+
+   min_level(t_range: tuple[float, float] = None)
+
+      Returns the lowest value that the Envelope takes over the given
+      range.
+
+      Parameters:
+         **t_range** -- tuple defining the start and end time of the
+         interval to check. If None, return the max level reached over
+         the entire Envelope.
+
+   average_level(t_range: tuple[float, float] = None)
+
+      Returns the average value that the Envelope takes over the given
+      range.
+
+      Parameters:
+         **t_range** -- tuple defining the start and end time of the
+         interval to check. If None, return the average level reached
+         over the entire Envelope.
+
+   max_absolute_slope()
+
+      Returns the maximum absolute value of the slope over the entire
+      Envelope.
+
+   property levels: Sequence
+
+      Tuple of levels at all segment boundary points.
+
+   property durations: Sequence[float]
+
+      Tuple of all the segment lengths.
+
+   get_durations(rounded: bool = False) -> Sequence[float]
+
+      Tuple of all the segment lengths.
+
+      Segment lengths are derived as "end_time - start_time", so an
+      envelope built up on a regular grid (e.g. repeated 0.1-long
+      segments) accumulates floating-point dust in these differences
+      even though each segment was appended with a clean duration.
+      Pass "rounded=True" to snap each length to a nearby nice decimal
+      — used for serialization / repr so the intended durations show,
+      without disturbing the exact segment boundary times that the
+      curve math relies on.
+
+      Parameters:
+         **rounded** -- if True, snap each duration to a nearby nice
+         decimal (see "snap_float_to_nice_decimal()")
+
+   property times: Sequence[float]
+
+      Tuple of all the segment start times.
+
+   property curve_shapes: Sequence[float | str]
+
+      Tuple of all the segment curve shapes.
+
+   property offset: float
+
+      Alias for "Envelope.start_time()".
+
+   insert(t, level, curve_shape_in=0, curve_shape_out=0) -> None
+
+      Insert a curve point at time t, and set the shape of the curve
+      into and out of it. This essentially divides the segment at that
+      point in two.
+
+      Parameters:
+         * **t** -- The time at which to add a point
+
+         * **level** -- The level of the new point we are adding
+
+         * **curve_shape_in** -- the curve shape of the new segment
+           going into the point we are adding
+
+         * **curve_shape_out** -- the curve shape of the new segment
+           going out of the point we are adding
+
+   insert_interpolated(t: float, relative_tolerance: float = 1e-07) -> float
+
+      Insert another curve point at the given time, without changing
+      the shape of the curve. Returns the t value of the new (or
+      already existing) interpolated point.
+
+      To avoid manufacturing degenerate, near-zero-width segments due
+      to floating point imprecision, a point is only added if it is at
+      least "relative_tolerance * segment_width" away from the
+      endpoints of the segment it falls in. If "t" lands *within* that
+      tolerance of an existing control point, this function call is
+      assumed to be an idempotent re-insertion of an existing curve
+      point after floating point error has muddied the waters. In this
+      case no point is added, and the existing control point's time is
+      returned instead.
+
+      Parameters:
+         * **t** -- the point at which to insert the point
+
+         * **relative_tolerance** -- how close "t" may come to an
+           existing control point before it is treated as coincident
+           with it, expressed as a fraction of the width of the
+           segment containing "t".
+
+      Returns:
+         the t value at which we interpolated. If we snapped to an
+         existing control point, its t is returned; otherwise the
+         passed value of "t" is returned.
+
+   append_segment(level, duration: float, curve_shape: float = None, tolerance: float = 0, halfway_level=None) -> None
+
+      Append a segment to the end of the curve ending at level and
+      lasting for duration. If we're adding a linear segment to a
+      linear segment, then we extend the last linear segment instead
+      of adding a new one if the level is within tolerance of where
+      the last one was headed
+
+      Parameters:
+         * **level** -- the level we're going to
+
+         * **duration** -- the duration of the new segment
+
+         * **curve_shape** -- defaults to 0 (linear)
+
+         * **tolerance** -- tolerance for extending a linear segment
+           rather than adding a new one
+
+         * **halfway_level** -- alternate way of defining the curve
+           shape. If this is set and the curve shape is not then we
+           use this to determine the curve shape.
+
+   prepend_segment(level, duration: float, curve_shape: float = None, tolerance: float = 0, halfway_level=None) -> None
+
+      Prepend a segment to the beginning of the curve, starting at
+      level and lasting for duration. If we're adding a linear segment
+      to a linear segment, then we extend the last linear segment
+      instead of adding a new one if the level is within tolerance of
+      where the last one was headed
+
+      Parameters:
+         * **level** -- the level that the prepended segment starts at
+
+         * **duration** -- the duration of the new segment
+
+         * **curve_shape** -- defaults to 0 (linear)
+
+         * **tolerance** -- tolerance for extending a linear segment
+           rather than adding a new one
+
+         * **halfway_level** -- alternate way of defining the curve
+           shape. If this is set and the curve shape is not then we
+           use this to determine the curve shape.
+
+   pop_segment() -> EnvelopeSegment | None
+
+      Remove and return the last segment of this Envelope. If there is
+      only one segment, reduce it to length zero and return None.
+
+   pop_segment_from_start() -> EnvelopeSegment | None
+
+      Remove and return the first segment of this Envelope. If there
+      is only one segment, reduce it to length zero and return None.
+
+   remove_segments_after(t: float) -> None
+
+      Removes all segments after the given time (including a partial
+      segment if t lands in the middle of a segment).
+
+      Parameters:
+         **t** -- the point at which this Envelope is to be truncated.
+
+   remove_segments_before(t: float) -> None
+
+      Removes all segments before the given time (including a partial
+      segment if t lands in the middle of a segment).
+
+      Parameters:
+         **t** -- the point at which this Envelope is to be truncated.
+
+   append_envelope(envelope_to_append: T) -> T
+
+      Extends this envelope by another one (shifted to start at the
+      end of this one).
+
+   prepend_envelope(envelope_to_prepend: T) -> T
+
+      Extends this envelope backwards by another one (shifted to end
+      at the start of this one).
+
+   value_at(t: float, from_left: bool = False)
+
+      Get the value of this Envelope at the given time.
+
+      Parameters:
+         * **t** -- the time
+
+         * **from_left** -- if true, get the limit as we approach t
+           from the left. In the case of a zero-length segment, which
+           suddenly changes the value, this tells us what the value
+           was right before the jump instead of right after the jump.
+
+   integrate_interval(t1: float, t2: float)
+
+      Get the definite integral under this Envelope from t1 to t2
+
+      Parameters:
+         * **t1** -- lower bound of integration
+
+         * **t2** -- upper bound of integration
+
+   get_upper_integration_bound(t1: float, desired_area: float, max_error: float = 1e-14) -> float
+
+      Given a lower integration bound, find the upper bound that will
+      result in the desired integral.
+
+      Walks the envelope segment by segment, subtracting each
+      segment's closed-form area until the remaining area falls within
+      a single segment, then inverts that segment using
+      "EnvelopeSegment.get_t_at_integral()" — exactly for
+      constant/linear segments, and to within "max_error" for
+      exponential ones.
+
+      Assumes a non-negative integrand, so that the integral increases
+      monotonically (true for tempo and dynamics curves, the primary
+      use). Regions before the first segment and after the last are
+      treated as flat (at the start/end level), matching
+      "integrate_interval()".
+
+      Parameters:
+         * **t1** -- lower bound of integration
+
+         * **desired_area** -- desired value of the integral.
+
+         * **max_error** -- convergence tolerance forwarded to the
+           per-segment inverse for the exponential case; ignored by
+           the (exact) constant and linear cases.
+
+   normalize_to_duration(desired_duration: float, in_place: bool = True) -> T
+
+      Stretch or squeeze the segments of this Envelope so that it has
+      the desired total duration.
+
+      Parameters:
+         * **desired_duration** -- the desired new duration of the
+           Envelope
+
+         * **in_place** -- if True, modifies this Envelope in place;
+           if False, makes a copy first
+
+   local_extrema(include_saddle_points: bool = False) -> Sequence[float]
+
+      Returns a list of the times where the curve changes direction.
+
+      Parameters:
+         **include_saddle_points** -- if True, also include points
+         where the curve starts to plateau
+
+   split_at(t: float | Sequence[float], change_original: bool = False, zero_out_offsets: bool = True) -> Sequence[T]
+
+      Splits the Envelope at one or several points and returns a tuple
+      of the pieces
+
+      Parameters:
+         * **t** -- either the time t or a tuple/list of times t at
+           which to split the curve
+
+         * **change_original** -- if true, the original Envelope gets
+           turned into the first of the returned tuple
+
+         * **zero_out_offsets** -- if true, each new piece is shifted
+           to start at zero
+
+      Returns:
+         tuple of Envelopes representing the pieces this has been
+         split into
+
+   simplified(use_curvature=True, include_saddle_points=True) -> T
+
+      Simplifies the envelope to only extrema and inflection points.
+
+      Parameters:
+         * **use_curvature** -- if True, adjusts the curvature of the
+           segments to match the half-way point between key points. If
+           False, linearly interpolate between key points.
+
+         * **include_saddle_points** -- if True, include saddle points
+           as well as extrema
+
+   is_shifted_version_of(other: T, tolerance: float = 1e-10) -> bool
+
+      Determines if this segment is simply a shifted version of
+      another segment
+
+      Parameters:
+         * **other** -- another EnvelopeSegment
+
+         * **tolerance** -- how close it needs to be to count as the
+           same
+
+   shift_vertical(amount) -> T
+
+      Shifts the levels of this Envelope the specified amount.
+
+      Parameters:
+         **amount** -- the amount to shift up and down by
+
+      Returns:
+         self, for chaining purposes
+
+   scale_vertical(amount) -> T
+
+      Scales the levels of this segment by the specified amount.
+
+      Parameters:
+         **amount** -- amount to scale output by
+
+      Returns:
+         self, for chaining purposes
+
+   shift_horizontal(amount: float) -> T
+
+      Shifts the domain of this Envelope by the specified amount.
+
+      Parameters:
+         **amount** -- the amount to shift the domain by
+
+      Returns:
+         self, for chaining purposes
+
+   scale_horizontal(amount: float) -> T
+
+      Scales the domain of this Envelope by the specified amount.
+
+      Parameters:
+         **amount** -- amount to scale domain by
+
+      Returns:
+         self, for chaining purposes
+
+   show_plot(title: str = None, resolution: int = 25, show_segment_divisions: bool = True, x_range: tuple[float, float] = None, y_range: tuple[float, float] = None) -> None
+
+      Shows a plot of this Envelope using matplotlib.
+
+      Parameters:
+         * **title** -- A title to give the plot.
+
+         * **resolution** -- number of points to use per envelope
+           segment
+
+         * **show_segment_divisions** -- Whether or not to place dots
+           at the division points between envelope segments
+
+         * **x_range** -- min and max value shown on the x-axis
+
+         * **y_range** -- min and max value shown on the y-axis
+
+   duplicate() -> T
+
+      Returns a copy of this object by serializing to and from JSON.
+
+   json_dumps() -> str
+
+      Dump this object as a JSON string. This uses a custom encoder
+      that recognizes and appropriately converts any attributes that
+      are object inheriting from SavesToJSON.
+
+   classmethod json_loads(s: str) -> T
+
+      Load this object from a JSON string. This uses a custom decoder
+      that looks for a "_type" key in any object/dictionary being
+      parsed and converts it to the class specified (assuming it a
+      subclass of SavesToJSON).
+
+      Parameters:
+         **s** -- a string representing this object in JSON format
+
+   classmethod load_from_json(file_path: str) -> T
+
+      Load this object from a JSON file with the given path. This uses
+      a custom decoder that looks for a "_type" key in any
+      object/dictionary being parsed and converts it to the class
+      specified (assuming it a subclass of SavesToJSON).
+
+      Parameters:
+         **file_path** -- path for loading the file
+
+   save_to_json(file_path: str) -> None
+
+      Save this object to a JSON file using the given path. This uses
+      a custom encoder that recognizes and appropriately converts any
+      attributes that are object inheriting from SavesToJSON.
+
+      Parameters:
+         **file_path** -- path for saving the file
+
+
+======================================================================
+=== FILE: expenvelope/expenvelope.envelope.txt
+======================================================================
+
+expenvelope.envelope
+********************
+
+Module containing the central "Envelope" class, which represents a
+piece-wise exponential function. "Envelope"s support arithmetic
+operations like addition, subtraction, multiplication, and division.
+They also support horizontal scaling and shifting.
+
+Note also that this is defining a function whose domain is a portion
+of the real number line, but whose range can actually be nearly
+anything, including, e.g., numpy arrays. All of the functionality,
+even integration, works for mappings onto other kinds of ranges.
+
+-[ Classes ]-
+
++------------+--------------------------------------------------------------------------------------------+
+| "Envelope" | Class representing a piece-wise exponential function.                                      |
+| ([levels,  |                                                                                            |
+| durations, |                                                                                            |
+| curve_shap |                                                                                            |
+| es, ...])  |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+
+* expenvelope.envelope.Envelope
+
+  * "Envelope"
+
+    * "Envelope.from_segments()"
+
+    * "Envelope.from_levels_and_durations()"
+
+    * "Envelope.from_levels()"
+
+    * "Envelope.from_list()"
+
+    * "Envelope.from_points()"
+
+    * "Envelope.release()"
+
+    * "Envelope.ar()"
+
+    * "Envelope.asr()"
+
+    * "Envelope.adsr()"
+
+    * "Envelope.from_function()"
+
+    * "Envelope.length()"
+
+    * "Envelope.start_time()"
+
+    * "Envelope.end_time()"
+
+    * "Envelope.start_level()"
+
+    * "Envelope.end_level()"
+
+    * "Envelope.max_level()"
+
+    * "Envelope.min_level()"
+
+    * "Envelope.average_level()"
+
+    * "Envelope.max_absolute_slope()"
+
+    * "Envelope.levels"
+
+    * "Envelope.durations"
+
+    * "Envelope.get_durations()"
+
+    * "Envelope.times"
+
+    * "Envelope.curve_shapes"
+
+    * "Envelope.offset"
+
+    * "Envelope.insert()"
+
+    * "Envelope.insert_interpolated()"
+
+    * "Envelope.append_segment()"
+
+    * "Envelope.prepend_segment()"
+
+    * "Envelope.pop_segment()"
+
+    * "Envelope.pop_segment_from_start()"
+
+    * "Envelope.remove_segments_after()"
+
+    * "Envelope.remove_segments_before()"
+
+    * "Envelope.append_envelope()"
+
+    * "Envelope.prepend_envelope()"
+
+    * "Envelope.value_at()"
+
+    * "Envelope.integrate_interval()"
+
+    * "Envelope.get_upper_integration_bound()"
+
+    * "Envelope.normalize_to_duration()"
+
+    * "Envelope.local_extrema()"
+
+    * "Envelope.split_at()"
+
+    * "Envelope.simplified()"
+
+    * "Envelope.is_shifted_version_of()"
+
+    * "Envelope.shift_vertical()"
+
+    * "Envelope.scale_vertical()"
+
+    * "Envelope.shift_horizontal()"
+
+    * "Envelope.scale_horizontal()"
+
+    * "Envelope.show_plot()"
+
+    * "Envelope.duplicate()"
+
+    * "Envelope.json_dumps()"
+
+    * "Envelope.json_loads()"
+
+    * "Envelope.load_from_json()"
+
+    * "Envelope.save_to_json()"
+
+
+======================================================================
+=== FILE: expenvelope/expenvelope.envelope_segment.EnvelopeSegment.txt
+======================================================================
+
+expenvelope.envelope_segment.EnvelopeSegment
+********************************************
+
+class expenvelope.envelope_segment.EnvelopeSegment(start_time: float, end_time: float, start_level, end_level, curve_shape: float | str)
+
+   Bases: "object"
+
+   A segment of an envelope, with the ability to perform interpolation
+   and integration.
+
+   Parameters:
+      * **start_time** -- the start time of the segment (where it is
+        in the parent "Envelope")
+
+      * **end_time** -- the end time of the segment
+
+      * **start_level** -- the level of the envelope segment at the
+        beginning. Note that a type has not been specified; the only
+        requirements are that the type should be consistent and
+        respond to addition and multiplication. This means, for
+        instance, that numpy arrays could be used.
+
+      * **end_level** -- the level of the envelope segment at the end.
+
+      * **curve_shape** -- 0 is linear, > 0 changes late, < 0 changes
+        early. Also, string expressions involving "exp" can be given,
+        where "exp" stands for the shape that will produce constant
+        proportional change per unit time.
+
+   Variables:
+      * **start_time** -- the start time of the segment
+
+      * **end_time** -- the end time of the segment
+
+   -[ Methods ]-
+
+   +------------+--------------------------------------------------------------------------------------------+
+   | "average_l | Get the average level achieved in this segment                                             |
+   | evel"()    |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "clone"()  | Make a duplicate of this segment.                                                          |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "end_slope | Get the ending slope of the EnvelopeSegment                                                |
+   | "()        |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "from_endp | Construct an EnvelopeSegment with the given start/end times/levels, specifying curve shape |
+   | oints_and_ | indirectly through the desired halfway level.                                              |
+   | halfway_le |                                                                                            |
+   | vel"(start |                                                                                            |
+   | _time,     |                                                                                            |
+   | ...)       |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "get_integ | Returns the range of possible values for the integral of this segment available by         |
+   | ral_range" | tweaking curvature                                                                         |
+   | ()         |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "get_t_at_ | Inverse of "integrate_segment()" within this single segment: given a lower bound "t1"      |
+   | integral"( | inside the segment, find the upper bound "t2" (also inside the segment) such that          |
+   | t1, desire | "integrate_segment(t1, t2) == desired_area".                                               |
+   | d_area[, m |                                                                                            |
+   | ax_error]) |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "integrate | Integrate part of this segment.                                                            |
+   | _segment"( |                                                                                            |
+   | t1, t2)    |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "is_shifte | Determines if this segment is simply a shifted version of another segment                  |
+   | d_version_ |                                                                                            |
+   | of"(other[ |                                                                                            |
+   | , toleranc |                                                                                            |
+   | e])        |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "max_absol | Get the max absolute value of the slope of this segment over the interval.                 |
+   | ute_slope" |                                                                                            |
+   | ()         |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "max_level | Get the maximum level achieved in this segment                                             |
+   | "()        |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "min_level | Get the minimum level achieved in this segment                                             |
+   | "()        |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "scale_hor | Scales the domain of this segment by the specified amount.                                 |
+   | izontal"(a |                                                                                            |
+   | mount)     |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "scale_ver | Scales the output of this segment by the specified amount.                                 |
+   | tical"(amo |                                                                                            |
+   | unt)       |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "set_curva | Changes the curvature of this segment so as to hit a desired target for the integral of    |
+   | ture_to_de | the segment                                                                                |
+   | sired_inte |                                                                                            |
+   | gral"(...) |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "shift_hor | Shifts the domain of this segment by the specified amount.                                 |
+   | izontal"(a |                                                                                            |
+   | mount)     |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "shift_ver | Shifts the output of this segment by the specified amount.                                 |
+   | tical"(amo |                                                                                            |
+   | unt)       |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "show_plot | Uses matplotlib to display a graph of this EnvelopeSegment.                                |
+   | "([title,  |                                                                                            |
+   | resolution |                                                                                            |
+   | ])         |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "split_at" | Split this segment into two EnvelopeSegment's without altering the curve shape and return  |
+   | (t)        | them.                                                                                      |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "start_slo | Get the starting slope of the EnvelopeSegment                                              |
+   | pe"()      |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "value_at" | Get interpolated value of the curve at time t.                                             |
+   | (t[, clip_ |                                                                                            |
+   | at_boundar |                                                                                            |
+   | y])        |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+
+   -[ Attributes ]-
+
+   +------------+--------------------------------------------------------------------------------------------+
+   | "curve_sha | The curve shape of this segment.                                                           |
+   | pe"        |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "duration" | Duration of this segment.                                                                  |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "end_level | The end level of this segment.                                                             |
+   | "          |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "start_lev | The start level of this segment.                                                           |
+   | el"        |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+
+   classmethod from_endpoints_and_halfway_level(start_time: float, end_time: float, start_level, end_level, halfway_level) -> T
+
+      Construct an EnvelopeSegment with the given start/end
+      times/levels, specifying curve shape indirectly through the
+      desired halfway level.
+
+      Parameters:
+         * **start_time** -- the start time of the segment (where it
+           is in the parent "Envelope")
+
+         * **end_time** -- the end time of the segment
+
+         * **start_level** -- the level of the envelope segment at the
+           beginning. (See documentation for "EnvelopeSegment")
+
+         * **end_level** -- the level of the envelope segment at the
+           end.
+
+         * **halfway_level** -- The level we want to reach halfway
+           through the segment.
+
+   property start_level
+
+      The start level of this segment. (Can take a wide variety of
+      types; see documentation for "EnvelopeSegment")
+
+   property end_level
+
+      The end level of this segment. (Can take a wide variety of
+      types; see documentation for "EnvelopeSegment")
+
+   property curve_shape: float
+
+      The curve shape of this segment. (See documentation for
+      "EnvelopeSegment")
+
+   property duration: float
+
+      Duration of this segment.
+
+   max_level()
+
+      Get the maximum level achieved in this segment
+
+   min_level()
+
+      Get the minimum level achieved in this segment
+
+   average_level()
+
+      Get the average level achieved in this segment
+
+   max_absolute_slope()
+
+      Get the max absolute value of the slope of this segment over the
+      interval. (Since the slope of e^x is e^x, the max slope of e^x
+      in the interval of [0, S] is e^S. If S is negative, the curve
+      has exactly the same slopes, but in reverse (still need to think
+      about why), so that's why the max slope term ends up being
+      e^abs(S). We then have to scale that by the average slope over
+      our interval divided by the average slope of e^x over [0, S] to
+      get the true, scaled average slope. Hence the other scaling
+      terms.)
+
+   start_slope()
+
+      Get the starting slope of the EnvelopeSegment
+
+   end_slope()
+
+      Get the ending slope of the EnvelopeSegment
+
+   value_at(t: float, clip_at_boundary: bool = True)
+
+      Get interpolated value of the curve at time t. The equation here
+      is y(t) = y1 + (y2 - y1) / (e^S - 1) * (e^(S*t) - 1)
+      (y1=starting rate, y2=final rate, t=progress along the curve 0
+      to 1, S=curve_shape) Essentially it's an appropriately scaled
+      and stretched segment of e^x with x in the range [0, S] as S
+      approaches zero, we get a linear segment, and S of ln(y2/y1)
+      represents normal exponential interpolation large values of S
+      correspond to last-minute change, and negative values of S
+      represent early change.
+
+      Parameters:
+         * **t** -- time at which to evaluate the level (relative to
+           the time zero, not to the start time of this segment)
+
+         * **clip_at_boundary** -- if True, any t outside the boundary
+           gets evaluated based on the start or end level (whichever
+           is applicable.
+
+   integrate_segment(t1, t2)
+
+      Integrate part of this segment.
+
+      Parameters:
+         * **t1** -- start time (relative to the time zero, not to the
+           start time of this segment)
+
+         * **t2** -- end time (ditto)
+
+   get_t_at_integral(t1: float, desired_area: float, max_error: float = 1e-14) -> float
+
+      Inverse of "integrate_segment()" within this single segment:
+      given a lower bound "t1" inside the segment, find the upper
+      bound "t2" (also inside the segment) such that
+      "integrate_segment(t1, t2) == desired_area".
+
+      Assumes "self.start_time <= t1 <= self.end_time", "desired_area
+      >= 0", that the level is non-negative across "[t1, end_time]"
+      (so the integral increases monotonically with the upper bound),
+      and that "desired_area" does not exceed the area remaining to
+      "end_time". The constant and linear cases are solved
+      analytically (exactly); the exponential case is solved with a
+      bracketed Newton iteration converging to "max_error".
+
+      Parameters:
+         * **t1** -- lower bound of integration, within this segment
+
+         * **desired_area** -- the integral we want to achieve,
+           measured forward from "t1"
+
+         * **max_error** -- convergence tolerance for the exponential
+           (bracketed Newton) case; unused in the linear case
+
+   get_integral_range()
+
+      Returns the range of possible values for the integral of this
+      segment available by tweaking curvature
+
+      :return a tuple of (low, high)
+
+   set_curvature_to_desired_integral(desired_integral) -> None
+
+      Changes the curvature of this segment so as to hit a desired
+      target for the integral of the segment
+
+      Parameters:
+         **desired_integral** -- target value of the segment integral
+
+   split_at(t: float) -> tuple[T, T]
+
+      Split this segment into two EnvelopeSegment's without altering
+      the curve shape and return them. This segment is altered in the
+      process.
+
+      Parameters:
+         **t** -- where to split it (t is absolute time)
+
+      Returns:
+         a tuple of this segment modified to be only the first part,
+         and a new segment for the second part
+
+   clone() -> T
+
+      Make a duplicate of this segment.
+
+   shift_vertical(amount) -> T
+
+      Shifts the output of this segment by the specified amount.
+
+      Parameters:
+         **amount** -- the amount to shift up and down by
+
+      Returns:
+         self, for chaining purposes
+
+   scale_vertical(amount) -> T
+
+      Scales the output of this segment by the specified amount.
+
+      Parameters:
+         **amount** -- amount to scale output by
+
+      Returns:
+         self, for chaining purposes
+
+   shift_horizontal(amount: float) -> T
+
+      Shifts the domain of this segment by the specified amount.
+
+      Parameters:
+         **amount** -- the amount to shift the domain by
+
+      Returns:
+         self, for chaining purposes
+
+   scale_horizontal(amount: float) -> T
+
+      Scales the domain of this segment by the specified amount.
+
+      Parameters:
+         **amount** -- amount to scale domain by
+
+      Returns:
+         self, for chaining purposes
+
+   is_shifted_version_of(other: T, tolerance: float = 1e-10) -> bool
+
+      Determines if this segment is simply a shifted version of
+      another segment
+
+      Parameters:
+         * **other** -- another EnvelopeSegment
+
+         * **tolerance** -- how close it needs to be to count as the
+           same
+
+   show_plot(title: str = None, resolution: int = 25) -> None
+
+      Uses matplotlib to display a graph of this EnvelopeSegment.
+
+      Parameters:
+         * **title** -- (optional) the title to give the graph
+
+         * **resolution** -- how many points to use in creating the
+           graph
+
+
+======================================================================
+=== FILE: expenvelope/expenvelope.envelope_segment.txt
+======================================================================
+
+expenvelope.envelope_segment
+****************************
+
+Module containing the "EnvelopeSegment" class. Every
+"envelope.Envelope" object, under the hood, is made up of a list of
+"EnvelopeSegment"s. "EnvelopeSegment"s support arithmetic operations
+like addition, subtraction, multiplication, and division. They also
+support horizontal scaling and shifting.
+
+Note also that this is defining a function whose domain is a portion
+of the real number line, but whose range can actually be nearly
+anything, including, e.g., numpy arrays. All of the functionality,
+even integration, works for mappings onto other kinds of ranges.
+
+-[ Classes ]-
+
++------------+--------------------------------------------------------------------------------------------+
+| "EnvelopeS | A segment of an envelope, with the ability to perform interpolation and integration.       |
+| egment"(st |                                                                                            |
+| art_time,  |                                                                                            |
+| end_time,  |                                                                                            |
+| ...)       |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+
+* expenvelope.envelope_segment.EnvelopeSegment
+
+  * "EnvelopeSegment"
+
+    * "EnvelopeSegment.from_endpoints_and_halfway_level()"
+
+    * "EnvelopeSegment.start_level"
+
+    * "EnvelopeSegment.end_level"
+
+    * "EnvelopeSegment.curve_shape"
+
+    * "EnvelopeSegment.duration"
+
+    * "EnvelopeSegment.max_level()"
+
+    * "EnvelopeSegment.min_level()"
+
+    * "EnvelopeSegment.average_level()"
+
+    * "EnvelopeSegment.max_absolute_slope()"
+
+    * "EnvelopeSegment.start_slope()"
+
+    * "EnvelopeSegment.end_slope()"
+
+    * "EnvelopeSegment.value_at()"
+
+    * "EnvelopeSegment.integrate_segment()"
+
+    * "EnvelopeSegment.get_t_at_integral()"
+
+    * "EnvelopeSegment.get_integral_range()"
+
+    * "EnvelopeSegment.set_curvature_to_desired_integral()"
+
+    * "EnvelopeSegment.split_at()"
+
+    * "EnvelopeSegment.clone()"
+
+    * "EnvelopeSegment.shift_vertical()"
+
+    * "EnvelopeSegment.scale_vertical()"
+
+    * "EnvelopeSegment.shift_horizontal()"
+
+    * "EnvelopeSegment.scale_horizontal()"
+
+    * "EnvelopeSegment.is_shifted_version_of()"
+
+    * "EnvelopeSegment.show_plot()"
+
+
+======================================================================
+=== FILE: expenvelope/expenvelope.json_serializer.SavesToJSON.txt
+======================================================================
+
+expenvelope.json_serializer.SavesToJSON
+***************************************
+
+class expenvelope.json_serializer.SavesToJSON
+
+   Bases: "object"
+
+   Abstract class that, when implemented, gives the ability to save to
+   and from JSON objects. Children must implement the "_to_dict" and
+   "_from_dict" functions which convert back and forth between an
+   instance and a dictionary representing that instance's data. The
+   data in such a dictionary may contain only standard json-
+   serializable types (lists, dicts, ints, floats, strings, etc.) and
+   other objects that implement the SavesToJSON interface,
+
+   -[ Methods ]-
+
+   +------------+--------------------------------------------------------------------------------------------+
+   | "duplicate | Returns a copy of this object by serializing to and from JSON.                             |
+   | "()        |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "json_dump | Dump this object as a JSON string.                                                         |
+   | s"()       |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "json_load | Load this object from a JSON string.                                                       |
+   | s"(s)      |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "load_from | Load this object from a JSON file with the given path.                                     |
+   | _json"(fil |                                                                                            |
+   | e_path)    |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "save_to_j | Save this object to a JSON file using the given path.                                      |
+   | son"(file_ |                                                                                            |
+   | path)      |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+
+   json_dumps() -> str
+
+      Dump this object as a JSON string. This uses a custom encoder
+      that recognizes and appropriately converts any attributes that
+      are object inheriting from SavesToJSON.
+
+   save_to_json(file_path: str) -> None
+
+      Save this object to a JSON file using the given path. This uses
+      a custom encoder that recognizes and appropriately converts any
+      attributes that are object inheriting from SavesToJSON.
+
+      Parameters:
+         **file_path** -- path for saving the file
+
+   classmethod json_loads(s: str) -> T
+
+      Load this object from a JSON string. This uses a custom decoder
+      that looks for a "_type" key in any object/dictionary being
+      parsed and converts it to the class specified (assuming it a
+      subclass of SavesToJSON).
+
+      Parameters:
+         **s** -- a string representing this object in JSON format
+
+   classmethod load_from_json(file_path: str) -> T
+
+      Load this object from a JSON file with the given path. This uses
+      a custom decoder that looks for a "_type" key in any
+      object/dictionary being parsed and converts it to the class
+      specified (assuming it a subclass of SavesToJSON).
+
+      Parameters:
+         **file_path** -- path for loading the file
+
+   duplicate() -> T
+
+      Returns a copy of this object by serializing to and from JSON.
+
+
+======================================================================
+=== FILE: expenvelope/expenvelope.json_serializer.SavesToJSONMeta.txt
+======================================================================
+
+expenvelope.json_serializer.SavesToJSONMeta
+*******************************************
+
+class expenvelope.json_serializer.SavesToJSONMeta(clsname, bases, attrs)
+
+   Bases: "ABCMeta"
+
+   Used to keep track of all known subclasses of SavesToJSON, so that
+   objects can be reconstructed.
+
+   -[ Inherited Methods ]-
+
+   +------------+--------------------------------------------------------------------------------------------+
+   | "mro"()    | Return a type's method resolution order.                                                   |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "register" | Register a virtual subclass of an ABC.                                                     |
+   | (subclass) |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+
+   -[ Attributes ]-
+
+   +------------+--------------------------------------------------------------------------------------------+
+   | "names_to_ |                                                                                            |
+   | types"     |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+   | "types_to_ |                                                                                            |
+   | names"     |                                                                                            |
+   +------------+--------------------------------------------------------------------------------------------+
+
+   names_to_types = {'ChangePedal': <class 'scamp.spanners.ChangePedal'>, 'EngravingSettings': <class 'scamp.settings.EngravingSettings'>, 'Ensemble': <class 'scamp.instruments.Ensemble'>, 'Envelope': <class 'expenvelope.envelope.Envelope'>, 'GlissandiSettings': <class 'scamp.settings.GlissandiSettings'>, 'MIDIStreamPlaybackImplementation': <class 'scamp.playback_implementations.MIDIStreamPlaybackImplementation'>, 'NotePlaybackAdjustment': <class 'scamp.playback_adjustments.NotePlaybackAdjustment'>, 'NoteProperties': <class 'scamp.note_properties.NoteProperties'>, 'OSCPlaybackImplementation': <class 'scamp.playback_implementations.OSCPlaybackImplementation'>, 'ParamPlaybackAdjustment': <class 'scamp.playback_adjustments.ParamPlaybackAdjustment'>, 'Performance': <class 'scamp.performance.Performance'>, 'PerformanceNote': <class 'scamp.performance.PerformanceNote'>, 'PerformancePart': <class 'scamp.performance.PerformancePart'>, 'PitchInterval': <class 'scamp_extensions.pitch.scale.PitchInterval'>, 'PlaybackImplementation': <class 'scamp.playback_implementations.PlaybackImplementation'>, 'PlaybackSettings': <class 'scamp.settings.PlaybackSettings'>, 'QuantizationRecord': <class 'scamp.quantization.QuantizationRecord'>, 'QuantizationSettings': <class 'scamp.settings.QuantizationSettings'>, 'SCPlaybackImplementation': <class 'scamp_extensions.playback.supercollider.sc_playback_implementation.SCPlaybackImplementation'>, 'SavesToJSON': <class 'expenvelope.json_serializer.SavesToJSON'>, 'Scale': <class 'scamp_extensions.pitch.scale.Scale'>, 'ScaleType': <class 'scamp_extensions.pitch.scale.ScaleType'>, 'ScampInstrument': <class 'scamp.instruments.ScampInstrument'>, 'Session': <class 'scamp.session.Session'>, 'SoundfontHost': <class 'scamp._soundfont_host.SoundfontHost'>, 'SoundfontPlaybackImplementation': <class 'scamp.playback_implementations.SoundfontPlaybackImplementation'>, 'Spanner': <class 'scamp.spanners.Spanner'>, 'SpellingPolicy': <class 'scamp.spelling.SpellingPolicy'>, 'StaffText': <class 'scamp.text.StaffText'>, 'StartBracket': <class 'scamp.spanners.StartBracket'>, 'StartDashes': <class 'scamp.spanners.StartDashes'>, 'StartHairpin': <class 'scamp.spanners.StartHairpin'>, 'StartPedal': <class 'scamp.spanners.StartPedal'>, 'StartPhrasingSlur': <class 'scamp.spanners.StartPhrasingSlur'>, 'StartSlur': <class 'scamp.spanners.StartSlur'>, 'StartTrill': <class 'scamp.spanners.StartTrill'>, 'StopBracket': <class 'scamp.spanners.StopBracket'>, 'StopDashes': <class 'scamp.spanners.StopDashes'>, 'StopHairpin': <class 'scamp.spanners.StopHairpin'>, 'StopPedal': <class 'scamp.spanners.StopPedal'>, 'StopPhrasingSlur': <class 'scamp.spanners.StopPhrasingSlur'>, 'StopSlur': <class 'scamp.spanners.StopSlur'>, 'StopTrill': <class 'scamp.spanners.StopTrill'>, 'TempoEnvelope': <class 'clockblocks.tempo_envelope.TempoEnvelope'>, 'TempoHistory': <class 'clockblocks.tempo_envelope.TempoHistory'>, 'TempoSettings': <class 'scamp.settings.TempoSettings'>, 'TimeSignature': <class 'scamp.quantization.TimeSignature'>, 'TimeVaryingParameter': <class 'scamp_extensions.utilities.time_varying_parameter.TimeVaryingParameter'>, '_MIDIPlaybackImplementation': <class 'scamp.playback_implementations._MIDIPlaybackImplementation'>, '_ScampSettings': <class 'scamp.settings._ScampSettings'>}
+
+   types_to_names = {<class 'clockblocks.tempo_envelope.TempoEnvelope'>: 'TempoEnvelope', <class 'clockblocks.tempo_envelope.TempoHistory'>: 'TempoHistory', <class 'expenvelope.envelope.Envelope'>: 'Envelope', <class 'expenvelope.json_serializer.SavesToJSON'>: 'SavesToJSON', <class 'scamp._soundfont_host.SoundfontHost'>: 'SoundfontHost', <class 'scamp.instruments.Ensemble'>: 'Ensemble', <class 'scamp.instruments.ScampInstrument'>: 'ScampInstrument', <class 'scamp.note_properties.NoteProperties'>: 'NoteProperties', <class 'scamp.performance.Performance'>: 'Performance', <class 'scamp.performance.PerformanceNote'>: 'PerformanceNote', <class 'scamp.performance.PerformancePart'>: 'PerformancePart', <class 'scamp.playback_adjustments.NotePlaybackAdjustment'>: 'NotePlaybackAdjustment', <class 'scamp.playback_adjustments.ParamPlaybackAdjustment'>: 'ParamPlaybackAdjustment', <class 'scamp.playback_implementations.MIDIStreamPlaybackImplementation'>: 'MIDIStreamPlaybackImplementation', <class 'scamp.playback_implementations.OSCPlaybackImplementation'>: 'OSCPlaybackImplementation', <class 'scamp.playback_implementations.PlaybackImplementation'>: 'PlaybackImplementation', <class 'scamp.playback_implementations.SoundfontPlaybackImplementation'>: 'SoundfontPlaybackImplementation', <class 'scamp.playback_implementations._MIDIPlaybackImplementation'>: '_MIDIPlaybackImplementation', <class 'scamp.quantization.QuantizationRecord'>: 'QuantizationRecord', <class 'scamp.quantization.TimeSignature'>: 'TimeSignature', <class 'scamp.session.Session'>: 'Session', <class 'scamp.settings.EngravingSettings'>: 'EngravingSettings', <class 'scamp.settings.GlissandiSettings'>: 'GlissandiSettings', <class 'scamp.settings.PlaybackSettings'>: 'PlaybackSettings', <class 'scamp.settings.QuantizationSettings'>: 'QuantizationSettings', <class 'scamp.settings.TempoSettings'>: 'TempoSettings', <class 'scamp.settings._ScampSettings'>: '_ScampSettings', <class 'scamp.spanners.ChangePedal'>: 'ChangePedal', <class 'scamp.spanners.Spanner'>: 'Spanner', <class 'scamp.spanners.StartBracket'>: 'StartBracket', <class 'scamp.spanners.StartDashes'>: 'StartDashes', <class 'scamp.spanners.StartHairpin'>: 'StartHairpin', <class 'scamp.spanners.StartPedal'>: 'StartPedal', <class 'scamp.spanners.StartPhrasingSlur'>: 'StartPhrasingSlur', <class 'scamp.spanners.StartSlur'>: 'StartSlur', <class 'scamp.spanners.StartTrill'>: 'StartTrill', <class 'scamp.spanners.StopBracket'>: 'StopBracket', <class 'scamp.spanners.StopDashes'>: 'StopDashes', <class 'scamp.spanners.StopHairpin'>: 'StopHairpin', <class 'scamp.spanners.StopPedal'>: 'StopPedal', <class 'scamp.spanners.StopPhrasingSlur'>: 'StopPhrasingSlur', <class 'scamp.spanners.StopSlur'>: 'StopSlur', <class 'scamp.spanners.StopTrill'>: 'StopTrill', <class 'scamp.spelling.SpellingPolicy'>: 'SpellingPolicy', <class 'scamp.text.StaffText'>: 'StaffText', <class 'scamp_extensions.pitch.scale.PitchInterval'>: 'PitchInterval', <class 'scamp_extensions.pitch.scale.Scale'>: 'Scale', <class 'scamp_extensions.pitch.scale.ScaleType'>: 'ScaleType', <class 'scamp_extensions.playback.supercollider.sc_playback_implementation.SCPlaybackImplementation'>: 'SCPlaybackImplementation', <class 'scamp_extensions.utilities.time_varying_parameter.TimeVaryingParameter'>: 'TimeVaryingParameter'}
+
+   mro()
+
+      Return a type's method resolution order.
+
+   register(subclass)
+
+      Register a virtual subclass of an ABC.
+
+      Returns the subclass, to allow usage as a class decorator.
+
+
+======================================================================
+=== FILE: expenvelope/expenvelope.json_serializer.txt
+======================================================================
+
+expenvelope.json_serializer
+***************************
+
+Module containing the "SavesToJSON" abstract class for serializing
+complex objects back and forth to JSON files.
+
+-[ Classes ]-
+
++------------+--------------------------------------------------------------------------------------------+
+| "SavesToJS | Abstract class that, when implemented, gives the ability to save to and from JSON objects. |
+| ON"()      |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "SavesToJS | Used to keep track of all known subclasses of SavesToJSON, so that objects can be          |
+| ONMeta"(cl | reconstructed.                                                                             |
+| sname,     |                                                                                            |
+| bases,     |                                                                                            |
+| attrs)     |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+
+* expenvelope.json_serializer.SavesToJSON
+
+  * "SavesToJSON"
+
+    * "SavesToJSON.json_dumps()"
+
+    * "SavesToJSON.save_to_json()"
+
+    * "SavesToJSON.json_loads()"
+
+    * "SavesToJSON.load_from_json()"
+
+    * "SavesToJSON.duplicate()"
+
+* expenvelope.json_serializer.SavesToJSONMeta
+
+  * "SavesToJSONMeta"
+
+    * "SavesToJSONMeta.names_to_types"
+
+    * "SavesToJSONMeta.types_to_names"
+
+    * "SavesToJSONMeta.mro()"
+
+    * "SavesToJSONMeta.register()"
+
+
+======================================================================
+=== FILE: expenvelope.txt
+======================================================================
+
+expenvelope package
+*******************
+
+Expenvelope is a library for expressing piecewise exponential curves,
+with musical applications in mind. (This is modeled in some ways on
+the *Env* class in SuperCollider.) Contents of this package include
+the *envelope* module, which defines the central "Envelope" class, and
+the *envelope_segment* module, which defines the "EnvelopeSegment"
+class, out of which an "Envelope" is built.
+
+-[ Modules: ]-
+
++------------+--------------------------------------------------------------------------------------------+
+| "envelope" | Module containing the central "Envelope" class, which represents a piece-wise exponential  |
+|            | function.                                                                                  |
++------------+--------------------------------------------------------------------------------------------+
+| "envelope_ | Module containing the "EnvelopeSegment" class.                                             |
+| segment"   |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "json_seri | Module containing the "SavesToJSON" abstract class for serializing complex objects back    |
+| alizer"    | and forth to JSON files.                                                                   |
++------------+--------------------------------------------------------------------------------------------+
+
+* expenvelope.envelope
+
+  * expenvelope.envelope.Envelope
+
+    * "Envelope"
+
+      * "Envelope.from_segments()"
+
+      * "Envelope.from_levels_and_durations()"
+
+      * "Envelope.from_levels()"
+
+      * "Envelope.from_list()"
+
+      * "Envelope.from_points()"
+
+      * "Envelope.release()"
+
+      * "Envelope.ar()"
+
+      * "Envelope.asr()"
+
+      * "Envelope.adsr()"
+
+      * "Envelope.from_function()"
+
+      * "Envelope.length()"
+
+      * "Envelope.start_time()"
+
+      * "Envelope.end_time()"
+
+      * "Envelope.start_level()"
+
+      * "Envelope.end_level()"
+
+      * "Envelope.max_level()"
+
+      * "Envelope.min_level()"
+
+      * "Envelope.average_level()"
+
+      * "Envelope.max_absolute_slope()"
+
+      * "Envelope.levels"
+
+      * "Envelope.durations"
+
+      * "Envelope.get_durations()"
+
+      * "Envelope.times"
+
+      * "Envelope.curve_shapes"
+
+      * "Envelope.offset"
+
+      * "Envelope.insert()"
+
+      * "Envelope.insert_interpolated()"
+
+      * "Envelope.append_segment()"
+
+      * "Envelope.prepend_segment()"
+
+      * "Envelope.pop_segment()"
+
+      * "Envelope.pop_segment_from_start()"
+
+      * "Envelope.remove_segments_after()"
+
+      * "Envelope.remove_segments_before()"
+
+      * "Envelope.append_envelope()"
+
+      * "Envelope.prepend_envelope()"
+
+      * "Envelope.value_at()"
+
+      * "Envelope.integrate_interval()"
+
+      * "Envelope.get_upper_integration_bound()"
+
+      * "Envelope.normalize_to_duration()"
+
+      * "Envelope.local_extrema()"
+
+      * "Envelope.split_at()"
+
+      * "Envelope.simplified()"
+
+      * "Envelope.is_shifted_version_of()"
+
+      * "Envelope.shift_vertical()"
+
+      * "Envelope.scale_vertical()"
+
+      * "Envelope.shift_horizontal()"
+
+      * "Envelope.scale_horizontal()"
+
+      * "Envelope.show_plot()"
+
+      * "Envelope.duplicate()"
+
+      * "Envelope.json_dumps()"
+
+      * "Envelope.json_loads()"
+
+      * "Envelope.load_from_json()"
+
+      * "Envelope.save_to_json()"
+
+* expenvelope.envelope_segment
+
+  * expenvelope.envelope_segment.EnvelopeSegment
+
+    * "EnvelopeSegment"
+
+      * "EnvelopeSegment.from_endpoints_and_halfway_level()"
+
+      * "EnvelopeSegment.start_level"
+
+      * "EnvelopeSegment.end_level"
+
+      * "EnvelopeSegment.curve_shape"
+
+      * "EnvelopeSegment.duration"
+
+      * "EnvelopeSegment.max_level()"
+
+      * "EnvelopeSegment.min_level()"
+
+      * "EnvelopeSegment.average_level()"
+
+      * "EnvelopeSegment.max_absolute_slope()"
+
+      * "EnvelopeSegment.start_slope()"
+
+      * "EnvelopeSegment.end_slope()"
+
+      * "EnvelopeSegment.value_at()"
+
+      * "EnvelopeSegment.integrate_segment()"
+
+      * "EnvelopeSegment.get_t_at_integral()"
+
+      * "EnvelopeSegment.get_integral_range()"
+
+      * "EnvelopeSegment.set_curvature_to_desired_integral()"
+
+      * "EnvelopeSegment.split_at()"
+
+      * "EnvelopeSegment.clone()"
+
+      * "EnvelopeSegment.shift_vertical()"
+
+      * "EnvelopeSegment.scale_vertical()"
+
+      * "EnvelopeSegment.shift_horizontal()"
+
+      * "EnvelopeSegment.scale_horizontal()"
+
+      * "EnvelopeSegment.is_shifted_version_of()"
+
+      * "EnvelopeSegment.show_plot()"
+
+* expenvelope.json_serializer
+
+  * expenvelope.json_serializer.SavesToJSON
+
+    * "SavesToJSON"
+
+      * "SavesToJSON.json_dumps()"
+
+      * "SavesToJSON.save_to_json()"
+
+      * "SavesToJSON.json_loads()"
+
+      * "SavesToJSON.load_from_json()"
+
+      * "SavesToJSON.duplicate()"
+
+  * expenvelope.json_serializer.SavesToJSONMeta
+
+    * "SavesToJSONMeta"
+
+      * "SavesToJSONMeta.names_to_types"
+
+      * "SavesToJSONMeta.types_to_names"
+
+      * "SavesToJSONMeta.mro()"
+
+      * "SavesToJSONMeta.register()"
+
+-[ Public-Facing API (result of *import **): ]-
+
++------------+--------------------------------------------------------------------------------------------+
+| "snap_floa | If x is near to a nice decimal, this rounds it.                                            |
+| t_to_nice_ |                                                                                            |
+| decimal"(x |                                                                                            |
+| [, ...])   |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "Envelope" | Class representing a piece-wise exponential function.                                      |
+| ([levels,  |                                                                                            |
+| durations, |                                                                                            |
+| curve_shap |                                                                                            |
+| es, ...])  |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+
+| "EnvelopeS | A segment of an envelope, with the ability to perform interpolation and integration.       |
+| egment"(st |                                                                                            |
+| art_time,  |                                                                                            |
+| end_time,  |                                                                                            |
+| ...)       |                                                                                            |
++------------+--------------------------------------------------------------------------------------------+

@@ -1,0 +1,50 @@
+{
+  "worktree": { "bgIsolation": "none" },
+  "permissions": {
+    "allow": [
+      "Bash(grep *)",
+      "Bash(rg *)",
+      "Bash(find *)",
+      "Bash(fd *)",
+      "Bash(fdfind *)",
+      "Bash(ls *)",
+      "Bash(wc *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(cat *)",
+      "Bash(file *)",
+      "Bash(which *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git show *)",
+      "Bash(git blame *)",
+      "Bash(git branch *)",
+      "Bash(git ls-files *)",
+      "Bash(git rev-parse *)",
+      "Bash(git -C * status*)",
+      "Bash(git -C * log*)",
+      "Bash(git -C * diff*)",
+      "Bash(git -C * show*)",
+      "Bash(git -C * branch*)",
+      "Bash(git -C * ls-files*)",
+      "Bash(cd clockblocks*)",
+      "Bash(cd expenvelope*)",
+      "Bash(cd pymusicxml*)",
+      "Bash(cd scamp*)",
+      "Bash(cd scamp_extensions*)"
+    ]
+  },
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "d=\"$CLAUDE_PROJECT_DIR\"; while [ -n \"$d\" ] && [ \"$d\" != / ]; do [ -f \"$d/workflow.md\" ] && { cat \"$d/workflow.md\"; break; }; d=\"$(dirname \"$d\")\"; done"
+          }
+        ]
+      }
+    ]
+  }
+}

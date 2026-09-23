@@ -1,0 +1,616 @@
+
+
+======================================================================
+=== FILE: Notation & engraving/Abjad & pymusicxml tweaks/double_score.py
+======================================================================
+
+"""
+SCAMP Example: Double Score
+
+Records two performances, turns them into scores, renders to abjad, and sticks them together!
+"""
+
+#  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  #
+#  This file is part of SCAMP (Suite for Computer-Assisted Music in Python)                      #
+#  Copyright © 2020 Marc Evanstein <marc@marcevanstein.com>.                                     #
+#                                                                                                #
+#  This program is free software: you can redistribute it and/or modify it under the terms of    #
+#  the GNU General Public License as published by the Free Software Foundation, either version   #
+#  3 of the License, or (at your option) any later version.                                      #
+#                                                                                                #
+#  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;     #
+#  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.     #
+#  See the GNU General Public License for more details.                                          #
+#                                                                                                #
+#  You should have received a copy of the GNU General Public License along with this program.    #
+#  If not, see <http://www.gnu.org/licenses/>.                                                   #
+#  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  #
+import abjad
+from scamp import *
+import random
+
+# one way of setting an initial tempo
+s = Session(tempo=100)
+oboe = s.new_part("oboe")
+bassoon = s.new_part("bassoon")
+
+
+# define a function for the oboe part
+def oboe_part():
+    # play random notes until we have
+    # passed beat 7 in the session
+    end_beat = s.beat + 8
+    while s.beat < end_beat - 1:
+        pitch = int(random.uniform(67, 79))
+        volume = random.uniform(0.5, 1)
+        length = random.uniform(0.25, 1)
+        oboe.play_note(pitch, volume, length)
+    # end with a note of exactly the right
+    # length to take us to the end of beat 8
+    oboe.play_note(80, 1.0, end_beat - s.beat)
+
+
+# define a function for the bassoon part
+def bassoon_part():
+    # simply play quarter notes on random
+    # pitches for 8 beats
+    end_beat = s.beat + 8
+    while s.beat < end_beat:
+        bassoon.play_note(
+            random.randint(52, 59), 1, 1
+        )
+
+
+print("FIRST SCORE")
+s.start_transcribing()
+# start the oboe and bassoon parts as two parallel child processes
+s.fork(oboe_part)
+s.fork(bassoon_part)
+# have the session wait for the child processes to finish (return)
+s.wait_for_children_to_finish()
+performance = s.stop_transcribing()
+score1 = performance.to_score()
+
+print("SECOND SCORE")
+performance2 = s.start_transcribing()
+# start the oboe and bassoon parts as two parallel child processes
+s.fork(oboe_part)
+s.fork(bassoon_part)
+# have the session wait for the child processes to finish (return)
+s.wait_for_children_to_finish()
+s.stop_transcribing()
+score2 = performance2.to_score(title="Score 2")
+
+# Header for score 1
+header1_block = abjad.Block(name="header")
+header1_block.items.append('piece = "First Piece"')
+
+score1_block = abjad.Block(name="score")
+score1_block.items.append(header1_block)
+score1_block.items.append(score1.to_abjad(wrap_as_file=False))
+
+# Header for score 2
+header2_block = abjad.Block(name="header")
+header2_block.items.append('piece = "Second Piece"')
+
+score2_block = abjad.Block(name="score")
+score2_block.items.append(header2_block)
+score2_block.items.append(score2.to_abjad(wrap_as_file=False))
+
+lilypond_file = abjad.LilyPondFile(items=[score1_block, score2_block])
+abjad.show(lilypond_file)
+# abjad.persist.as_pdf(lilypond_file, "doublescore.pdf")
+
+
+======================================================================
+=== FILE: Notation & engraving/Abjad & pymusicxml tweaks/key_sig.py
+======================================================================
+
+"""
+SCAMP Example: Key Signature via pymusicxml
+
+Adds a key signature by exporting through pymusicxml and setting it on the first measure.
+"""
+
+#  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  #
+#  This file is part of SCAMP (Suite for Computer-Assisted Music in Python)                      #
+#  Copyright © 2020 Marc Evanstein <marc@marcevanstein.com>.                                     #
+#                                                                                                #
+#  This program is free software: you can redistribute it and/or modify it under the terms of    #
+#  the GNU General Public License as published by the Free Software Foundation, either version   #
+#  3 of the License, or (at your option) any later version.                                      #
+#                                                                                                #
+#  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;     #
+#  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.     #
+#  See the GNU General Public License for more details.                                          #
+#                                                                                                #
+#  You should have received a copy of the GNU General Public License along with this program.    #
+#  If not, see <http://www.gnu.org/licenses/>.                                                   #
+#  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  #
+
+from scamp import *
+
+s = Session(tempo=120)
+
+violin = s.new_part("violin")
+s.start_transcribing()
+
+for _ in range(3):
+    for p in [62, 65, 63, 67, 68, 72, 70]:
+        violin.play_note(p, 0.7, 0.5, "key: Eb")
+
+pymusicxml_score = s.stop_transcribing().to_score().to_music_xml()
+pymusicxml_part = pymusicxml_score.contents[0]
+pymusicxml_part.measures[0].key = "Eb"
+
+pymusicxml_score.export_to_file("KeySig.musicxml")
+
+
+======================================================================
+=== FILE: Notation & engraving/Basics/record_and_export_midi.py
+======================================================================
+
+"""
+SCAMP Example: Export to MIDI File
+
+Records glissandi with microtonal pitches and playback params (fast-forwarded),
+then exports the performance as a MIDI file.
+"""
+
+#  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  #
+#  This file is part of SCAMP (Suite for Computer-Assisted Music in Python)                      #
+#  Copyright © 2020 Marc Evanstein <marc@marcevanstein.com>.                                     #
+#                                                                                                #
+#  This program is free software: you can redistribute it and/or modify it under the terms of    #
+#  the GNU General Public License as published by the Free Software Foundation, either version   #
+#  3 of the License, or (at your option) any later version.                                      #
+#                                                                                                #
+#  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;     #
+#  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.     #
+#  See the GNU General Public License for more details.                                          #
+#                                                                                                #
+#  You should have received a copy of the GNU General Public License along with this program.    #
+#  If not, see <http://www.gnu.org/licenses/>.                                                   #
+#  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  #
+
+import random
+from scamp import *
+
+
+random.seed(0)
+
+s = Session()
+s.set_rate_target(2, Moment.after_time(10))
+
+# s.fast_forward()
+
+clar = s.new_part("clarinet")
+piano = s.new_part("piano")
+
+performance = s.start_transcribing()
+
+
+def piano_part():
+    while True:
+        piano.play_note(random.randint(40, 58), random.uniform(0.3, 0.8), 0.5, "staccato")
+
+
+piano_clock = fork(piano_part)
+
+for p in [random.randint(50, 80) for _ in range(30)]:
+    clar.play_note([p, p + 1, p - 2], Envelope([0.8, 0.1, 1.0], [0.1, 1.0]), random.uniform(0.1, 2),
+                   f"param_10: {random.uniform(0, 1)}" if random.random() < 0.5 else "param_10: [0, 1]")
+
+piano_clock.kill()
+s.stop_transcribing().export_to_midi_file("midi_export.mid")
+
+======================================================================
+=== FILE: Notation & engraving/From live input/keyboard_input_with_notation.py
+======================================================================
+
+"""
+SCAMP EXAMPLE: Computer Keyboard Input
+
+(WARNING: consumes key events and makes the keyboard otherwise unresponsive. To avoid this, you can remove the
+suppress=True flag under register_keyboard_listener)
+
+Demonstration of receiving computer keyboard events and using them to play notes based on the key number.
+Any key whose number code lies within a reasonable range triggers the playback of a note of that MIDI pitch.
+Escape
+"""
+
+#  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  #
+#  This file is part of SCAMP (Suite for Computer-Assisted Music in Python)                      #
+#  Copyright © 2020 Marc Evanstein <marc@marcevanstein.com>.                                     #
+#                                                                                                #
+#  This program is free software: you can redistribute it and/or modify it under the terms of    #
+#  the GNU General Public License as published by the Free Software Foundation, either version   #
+#  3 of the License, or (at your option) any later version.                                      #
+#                                                                                                #
+#  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;     #
+#  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.     #
+#  See the GNU General Public License for more details.                                          #
+#                                                                                                #
+#  You should have received a copy of the GNU General Public License along with this program.    #
+#  If not, see <http://www.gnu.org/licenses/>.                                                   #
+#  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  #
+
+from scamp import *
+
+s = Session()
+
+piano = s.new_part("piano")
+perc = s.new_part("power")
+s.start_transcribing(piano)
+
+# dictionary mapping keys that are down to the NoteHandles used to manipulate them.
+notes_started = {}
+
+
+def key_down(name, number):
+    if 20 < number < 110 and number not in notes_started:
+        notes_started[number] = piano.start_note(number, 0.5)
+
+
+def key_up(name, number):
+    if number == 27:
+        s.kill()
+
+    if 20 < number < 110 and number in notes_started:
+        notes_started[number].end()
+        del notes_started[number]
+
+
+def metro():
+    while True:
+        perc.play_note(60, 1, 1)
+
+
+fork(metro)
+
+# note: suppress=True causes keyboard events to be consumed by this script, effectively disabling the keyboard
+s.register_keyboard_listener(on_press=key_down, on_release=key_up, suppress=True)
+
+with s:
+    # the context manager captures clock (session) kill gracefully, but we also need to
+    # catch a KeyboardInterrupt if we want to build the score on ctrl-C
+    try:
+        wait_forever()
+    except KeyboardInterrupt:
+        pass
+
+s.stop_transcribing().to_score().show()
+
+======================================================================
+=== FILE: Notation & engraving/From live input/run_as_server_render_scores.py
+======================================================================
+
+"""
+SCAMP Example: Run as Server and Render Scores
+
+Runs the session as a server, repeatedly recording short fragments and popping up a score for each.
+"""
+
+#  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  #
+#  This file is part of SCAMP (Suite for Computer-Assisted Music in Python)                      #
+#  Copyright © 2020 Marc Evanstein <marc@marcevanstein.com>.                                     #
+#                                                                                                #
+#  This program is free software: you can redistribute it and/or modify it under the terms of    #
+#  the GNU General Public License as published by the Free Software Foundation, either version   #
+#  3 of the License, or (at your option) any later version.                                      #
+#                                                                                                #
+#  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;     #
+#  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.     #
+#  See the GNU General Public License for more details.                                          #
+#                                                                                                #
+#  You should have received a copy of the GNU General Public License along with this program.    #
+#  If not, see <http://www.gnu.org/licenses/>.                                                   #
+#  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  #
+import random
+import time
+from scamp import *
+
+s = Session().run_as_server()
+
+piano = s.new_part("piano")
+
+
+def some_music():
+    for _ in range(6):
+        piano.play_note(random.randint(60, 70), 1.0, random.choice([0.5, 1.0, 1.5]))
+
+
+score_num = 1
+
+for _ in range(3):
+    # wait some random length of time
+    time.sleep(random.uniform(1, 3))
+    s.start_transcribing()
+    s.fork(some_music)
+    time.sleep(8)
+    performance = s.stop_transcribing()
+    performance.to_score(title=f"Score #{score_num}").show()
+    score_num += 1
+
+
+
+======================================================================
+=== FILE: Notation & engraving/Quantization/quantization.py
+======================================================================
+
+"""
+SCAMP Example: Quantization Comparison
+
+Records a loose piano improvisation against a metronome, then plays back the quantized version.
+"""
+
+#  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  #
+#  This file is part of SCAMP (Suite for Computer-Assisted Music in Python)                      #
+#  Copyright © 2020 Marc Evanstein <marc@marcevanstein.com>.                                     #
+#                                                                                                #
+#  This program is free software: you can redistribute it and/or modify it under the terms of    #
+#  the GNU General Public License as published by the Free Software Foundation, either version   #
+#  3 of the License, or (at your option) any later version.                                      #
+#                                                                                                #
+#  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;     #
+#  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.     #
+#  See the GNU General Public License for more details.                                          #
+#                                                                                                #
+#  You should have received a copy of the GNU General Public License along with this program.    #
+#  If not, see <http://www.gnu.org/licenses/>.                                                   #
+#  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++  #
+
+from scamp import *
+import random
+
+
+s = Session()
+
+drum = s.new_part("metronome", (0, 116))
+piano = s.new_part("piano")
+
+s.start_transcribing()
+
+
+recording = True
+
+random.seed(4)
+
+
+def piano_part():
+    while recording:
+        if random.random() < 0.5:
+            piano.play_note(50 + random.random()*20, 0.5, random.random() * 1.5)
+        else:
+            piano.play_chord([50 + random.random()*20, 50 + random.random()*20], 0.5, random.random() * 1.5)
+
+
+s.fork(piano_part)
+
+print("Making Recording...", end="")
+for _ in range(8):
+    drum.play_note(80, 1, 1)
+
+recording = False
+performance = s.stop_transcribing()
+quantized_performance = performance.quantized(
+    QuantizationScheme([
+        MeasureQuantizationScheme.from_time_signature("4/4", max_divisor=5, max_divisor_indigestibility=3)
+    ])
+)
+
+print("Done")
+
+while True:
+    print("Replaying recording with quantization")
+    wait(1)
+    quantized_performance.play()
+
+    print("Replaying recording without quantization")
+    wait(1)
+    performance.play()
+
+
+======================================================================
+=== FILE: Notation & engraving/Special notations/post_processing.py
+======================================================================
+
+"""
+SCAMP Example: Performance Post-Processing
+
+Post-processes a recorded Performance of a random walk of thirds and fifths, so that every time three consecutive
+notes are a triad, they are slurred together and spelled consistently.
+"""
+
+from scamp import *
+import random
+
+random.seed(38)  # makes output deterministic
+
+s = Session()
+s.tempo = 120
+
+violin = s.new_part("violin")
+
+s.start_transcribing()
+
+pitch = 70
+while s.beat < 40:
+    dur = random.choice([0.5, 1.0])
+    violin.play_note(pitch, 0.5, dur)
+    # go up or down by a 5th, 4th, or major or minor 3rd
+    pitch += random.choice([-7, -5, -4, -3, 3, 4, 5, 7])
+    if pitch < 55:
+        pitch += 12
+    elif pitch > 93:
+        pitch -= 12
+
+perf = s.stop_transcribing()
+
+
+# ----------------- POST PROCESSING --------------------#
+
+triads = {
+    'major': [{n, (n + 4) % 12, (n + 7) % 12} for n in range(12)],
+    'minor': [{n, (n + 3) % 12, (n + 7) % 12} for n in range(12)]
+}
+
+triad_spellings = {
+    'major': [SpellingPolicy.all_flats() if n in (1, 3, 8, 10) else SpellingPolicy.all_sharps() for n in range(12)],
+    'minor': [SpellingPolicy.all_flats() if n in (0, 3, 5, 7, 10) else SpellingPolicy.all_sharps() for n in range(12)]
+}
+
+def get_triad(pcs):
+    """Determines which (if any) major or minor triad these pitch classes belong to."""
+    pcs_set = set(pcs)
+    if pcs_set in triads['major']:
+        return 'major', triads['major'].index(pcs_set)
+    elif pcs_set in triads['minor']:
+        return 'minor', triads['minor'].index(pcs_set)
+    return False
+
+
+last_pitch_classes = []
+last_notes = []
+
+for note in perf.parts[0].get_note_iterator():
+    last_notes.append(note)
+    last_pitch_classes.append(note.pitch % 12)
+    # only keep the last 3 pitch classes
+    if len(last_notes) > 3:
+        last_notes.pop(0)
+        last_pitch_classes.pop(0)
+
+    # check for a triad and process
+    if len(last_pitch_classes) == 3 and (triad := get_triad(last_pitch_classes)):
+        last_notes[0].properties.spanners.append(StartSlur())
+        last_notes[-1].properties.spanners.append(StopSlur())
+
+        major_minor, root = triad
+        for note in last_notes:
+            note.properties.spelling_policies = [triad_spellings[major_minor][root]]
+
+        # clear the notes list so that we start fresh with the next note
+        last_notes.clear()
+        last_pitch_classes.clear()
+
+perf.to_score().show()
+
+
+======================================================================
+=== FILE: Notation & engraving/Special notations/voices.py
+======================================================================
+
+"""
+SCAMP Example: Multiple Voices
+
+Demonstration of how to place notes in specific voices within a staff/part. Named voices keep notes together in the
+same voice, and numbered voices determine exactly which voice they go in. By default SCAMP allows up to four voices per
+staff, but this can easily become quite messy. Set `engraving_settings.max_voices_per_staff` to limit the number of
+voices per staff, placing overflow voices on separate staves.
+"""
+
+from scamp import *
+
+s = Session()
+
+piano = s.new_part("piano")
+
+melody = (
+    (0, 0.5), (3, 1/2 + 1/3), (2, 1/3), (5, 1/3), (3, 0.5), (None, 1.0), (5, 0.25), (6, 0.75), (7, 0.5)
+)
+
+
+def _do_melody(start_pitch, dilation_factor=1.0, properties=None):
+    for interval, dur in melody:
+        piano.play_note(start_pitch + interval if interval is not None else None,
+                        0.7,
+                        dur * dilation_factor,
+                        properties)
+
+
+def fork_melody(start_pitch, dilation_factor=1.0, properties=None):
+    fork(_do_melody, args=(start_pitch, dilation_factor, properties))
+
+
+s.start_transcribing()
+
+fork_melody(70, properties="voice: A")
+wait(2)
+fork_melody(85, 2, properties="voice: B")
+wait(4)
+fork_melody(67, properties="voice: C")
+wait(2)
+fork_melody(59, 0.5, properties="voice: 4")
+wait_for_children_to_finish()
+
+perf = s.stop_transcribing()
+
+# default: allow up to 4 voices per staff, so all four fit on one staff
+perf.to_score().show()
+
+# cap at 2 voices per staff, so the overflow voices spill onto a second staff
+engraving_settings.max_voices_per_staff = 2
+perf.to_score().show()
+
+# cap at 1 voice per staff, so every voice gets its own staff
+engraving_settings.max_voices_per_staff = 1
+perf.to_score().show()
+
+
+
+======================================================================
+=== FILE: Notation & engraving/Special notations/voices_with_octave_lines.py
+======================================================================
+
+"""
+SCAMP Example: Multiple Voices with Octave Lines
+
+Same as the voices example, but with ottava applied to certain voices. These ottava contradict one another when the
+voices are (by default) placed on the same staff, so the largest octave line wins and a warning is emitted. To avoid
+this conflict, set `engraving_settings.max_voices_per_staff = 1` to place each voice in a separate staff.
+"""
+
+from scamp import *
+
+s = Session()
+
+piano = s.new_part("piano")
+
+melody = (
+    (0, 0.5), (3, 1/2 + 1/3), (2, 1/3), (5, 1/3), (3, 0.5), (None, 1.0), (5, 0.25), (6, 0.75), (7, 0.5)
+)
+
+
+def _do_melody(start_pitch, dilation_factor=1.0, properties=None):
+    """Play the melody at a given pitch and speed, passing along the given properties to every note."""
+    for interval, dur in melody:
+        piano.play_note(start_pitch + interval if interval is not None else None,
+                        0.7,
+                        dur * dilation_factor,
+                        properties)
+
+
+def fork_melody(start_pitch, dilation_factor=1.0, properties=None):
+    fork(_do_melody, args=(start_pitch, dilation_factor, properties))
+
+
+s.start_transcribing()
+
+fork_melody(70, properties=["8va", "voice: A"])
+wait(2)
+fork_melody(97, 2, properties=["15va", "voice: B"])
+wait(4)
+fork_melody(67, properties="voice: C")
+wait(2)
+fork_melody(35, 0.5, properties=["8vb", "voice: 4"])
+wait_for_children_to_finish()
+
+perf = s.stop_transcribing()
+
+# default: allow 4 voices per staff, resulting in conflicting octave lines; largest displacement wins
+perf.to_score(title="Awful version: 4 voices with conflicting octave lines in one staff.").show()
+
+# use this setting to force each voice onto its own staff to avoid conflicting octave lines
+engraving_settings.max_voices_per_staff = 1
+perf.to_score(title="Using `engraving_settings.max_voices_per_staff = 1`").show()

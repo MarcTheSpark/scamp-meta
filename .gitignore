@@ -1,0 +1,22 @@
+# Python / build artifacts
+__pycache__/
+*.pyc
+*.egg-info/
+build/
+dist/
+dist-*/
+
+# Local environments & IDE
+.venv/
+.idea/
+.claude/settings.local.json
+
+# Workspace-local, not shared
+scratch/
+.mcp.json
+
+# Deploy target with host details — copy deploy.local.sh.example (see uploadDocs.sh)
+deploy.local.sh
+
+# Built docs — deployed via uploadDocs.sh, never committed
+docs_build/
