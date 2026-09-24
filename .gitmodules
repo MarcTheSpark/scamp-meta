@@ -18,3 +18,7 @@
 	path = scamp_extensions
 	url = https://github.com/MarcTheSpark/scamp_extensions.git
 	branch = main
+[submodule "SCScampUtils"]
+	path = SCScampUtils
+	url = https://github.com/MarcTheSpark/SCScampUtils.git
+	branch = master
