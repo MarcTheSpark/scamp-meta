@@ -362,13 +362,14 @@ def write_download(unit):
 
 def github_line(unit):
     """The '*Example script/directory:*' line, linking to the source on the owning package's
-    GitHub."""
+    GitHub. The path is percent-encoded for the URL -- topic folders like "Notation & engraving"
+    carry spaces and ampersands -- while the visible text keeps the readable path."""
     base, branch = GITHUB[unit["package"]]
-    if unit["is_folder"]:
-        url = f"{base}/tree/{branch}/examples/{unit['rel']}"
-        return f"*Example directory* ({unit['package']}): `examples/{unit['rel']} <{url}>`__"
-    url = f"{base}/blob/{branch}/examples/{unit['rel']}"
-    return f"*Example script* ({unit['package']}): `examples/{unit['rel']} <{url}>`__"
+    rel = unit["rel"]
+    rel_url = urllib.parse.quote(str(rel))
+    tree, kind = ("tree", "directory") if unit["is_folder"] else ("blob", "script")
+    url = f"{base}/{tree}/{branch}/examples/{rel_url}"
+    return f"*Example {kind}* ({unit['package']}): `examples/{rel} <{url}>`__"
 
 
 # ---- pages ----------------------------------------------------------------
