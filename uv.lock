@@ -232,7 +232,7 @@ wheels = [
 
 [[package]]
 name = "clockblocks"
-version = "1.2.0"
+version = "1.3.0"
 source = { editable = "clockblocks" }
 dependencies = [
     { name = "expenvelope" },
@@ -394,7 +394,7 @@ sdist = { url = "https://files.pythonhosted.org/packages/a5/f5/397b61091120a9ca5
 
 [[package]]
 name = "expenvelope"
-version = "0.8.1"
+version = "0.8.2"
 source = { editable = "expenvelope" }
 
 [[package]]
@@ -1061,7 +1061,7 @@ wheels = [
 
 [[package]]
 name = "pymusicxml"
-version = "0.5.8"
+version = "0.6.0"
 source = { editable = "pymusicxml" }
 
 [[package]]
@@ -1444,7 +1444,7 @@ wheels = [
 
 [[package]]
 name = "scamp"
-version = "0.12.0"
+version = "0.13.0"
 source = { editable = "scamp" }
 dependencies = [
     { name = "arpeggio" },
@@ -1480,7 +1480,7 @@ provides-extras = ["all"]
 
 [[package]]
 name = "scamp-extensions"
-version = "0.3.7"
+version = "0.4.0"
 source = { editable = "scamp_extensions" }
 dependencies = [
     { name = "clockblocks" },
