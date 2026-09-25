@@ -3,15 +3,19 @@
 # PLEASE REVIEW THE AI POLICY AT REPOSITORY ROOT FOR MORE INFORMATION
 # Release helper for the SCAMP workspace.
 #
-# Assumes you've already pushed a tagged commit (or otherwise triggered the
-# `Build wheels` workflow) on the scamp repo so that GitHub Actions has built
-# the cross-platform wheels + sdist.
+# Assumes each package's version is bumped, committed, tagged (vX.Y.Z), and the
+# tags pushed. scamp's cross-platform wheels come from the `Build wheels` GitHub
+# Actions workflow; because that workflow's test-install pulls scamp's deps from
+# PyPI, the deps are uploaded (step 2) before scamp's wheels are fetched (step 3),
+# and the script can trigger a fresh wheel run once they're up.
 #
 # Walks through:
-#   1. download scamp's CI artifacts into scamp/dist/
-#   2. build the intel-mac wheel locally via build_macos_12_wheel.sh
-#   3. build sdist + wheel for each pure-python sibling package
-#   4. twine upload for each package, asking before each one
+#   1. build sdist + wheel for each pure-python sibling package
+#   2. twine upload scamp's dependencies to PyPI (they must precede scamp's CI)
+#   3. fetch scamp's CI wheels into scamp/dist/, and build the intel-mac wheel
+#   4. twine upload scamp
+#   5. twine upload scamp_extensions
+#   6. publish a GitHub release for each package (dry run, then confirm)
 #
 # Each significant step prints the command(s) it's about to run and asks for
 # confirmation.
@@ -20,10 +24,14 @@ set -euo pipefail
 
 WORKSPACE_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 SCAMP_DIR="$WORKSPACE_DIR/scamp"
-PURE_PKGS=(clockblocks expenvelope pymusicxml scamp_extensions)
-# Dependency order: expenvelope <- clockblocks <- scamp <- scamp_extensions
-# (pymusicxml is independent, but must precede scamp, which requires it).
+PURE_PKGS=(clockblocks expenvelope pymusicxml scamp_extensions)   # built locally with python -m build
+# Full dependency order: expenvelope <- clockblocks <- scamp <- scamp_extensions
+# (pymusicxml is independent but must precede scamp, which requires it).
 UPLOAD_ORDER=(expenvelope pymusicxml clockblocks scamp scamp_extensions)
+# scamp's pure-python deps, uploaded to PyPI BEFORE scamp's wheels are fetched:
+# scamp's CI test-install pulls them from PyPI, so a scamp release that bumps
+# them builds green only once they're published.
+DEP_UPLOAD_ORDER=(expenvelope pymusicxml clockblocks)
 GH_REPO="MarcTheSpark/scamp"
 
 # ---------------------------------------------------------------- helpers ----
@@ -79,6 +87,49 @@ require() {
     fi
 }
 
+upload_pkg() {
+    local name="$1" dir="$2"
+    if [[ ! -d "$dir/dist" ]]; then
+        echo "  ${c_dim}$dir/dist does not exist, skipping $name.${c_reset}"
+        return
+    fi
+    heading "Upload: $name"
+    echo "Files in $dir/dist:"
+    ls -1 "$dir/dist"
+    run_step "twine upload $name" \
+        "cd '$dir' && twine check dist/* && twine upload dist/*" \
+        || true
+}
+
+publish_gh_release() {
+    local name="$1" dir="$2"
+    local script="$dir/scripts/publish_github_release.py"
+    if [[ ! -f "$script" ]]; then
+        echo "  ${c_dim}$name has no publish_github_release.py, skipping.${c_reset}"
+        return
+    fi
+    local version tag rel
+    if ! version=$(python3 -c "import tomllib; print(tomllib.load(open('$dir/pyproject.toml','rb'))['project']['version'])"); then
+        echo "  ${c_dim}could not read $name's version, skipping.${c_reset}"
+        return
+    fi
+    tag="v$version"
+    rel="${script#"$WORKSPACE_DIR"/}"
+
+    heading "Publish $name $tag as a GitHub release"
+    show_cmd "python3 $rel $tag --dry-run"
+    if ! python3 "$script" "$tag" --dry-run; then
+        echo "  ${c_dim}dry run failed for $name — skipping (check its tag, changelog, and dist/).${c_reset}"
+        return
+    fi
+    if confirm "Publish $name $tag to GitHub now?"; then
+        show_cmd "python3 $rel $tag"
+        python3 "$script" "$tag" || echo "  ${c_dim}publish failed for $name (already released?).${c_reset}"
+    else
+        echo "  ${c_dim}skipped $name.${c_reset}"
+    fi
+}
+
 # ------------------------------------------------------------ pre-flight ----
 
 require python3 "Need Python 3.12+ to drive the builds."
@@ -94,10 +145,51 @@ echo "Workspace: $WORKSPACE_DIR"
 echo "Scamp pkg: $SCAMP_DIR"
 echo "Pure-py:   ${PURE_PKGS[*]}"
 echo "GH repo:   $GH_REPO"
+echo "(To test uploads first, edit the twine commands to add --repository testpypi.)"
 
-# --------------------------------------------------- 1. download CI artifacts
+# --------------------------------- 1. build pure-python wheels + sdists ------
 
-heading "Step 1: download CI wheels + sdist into scamp/dist"
+heading "Step 1: build sdist + wheel for each pure-python package"
+echo "Each package builds with: python -m build  (produces both .whl and .tar.gz in <pkg>/dist/)"
+
+for pkg in "${PURE_PKGS[@]}"; do
+    pkg_dir="$WORKSPACE_DIR/$pkg"
+    if [[ ! -d "$pkg_dir" ]]; then
+        echo "  ${c_dim}$pkg_dir not found, skipping.${c_reset}"
+        continue
+    fi
+    run_step "build $pkg" \
+        "cd '$pkg_dir' && rm -rf dist build *.egg-info src/*.egg-info 2>/dev/null; python -m build" \
+        || true
+done
+
+# ------------------------- 2. upload scamp's dependencies to PyPI ------------
+
+heading "Step 2: upload scamp's dependencies to PyPI"
+echo "These land before scamp's wheels are fetched: scamp's CI test-install pulls them"
+echo "from PyPI, so its 'Build wheels' run only passes once they're published."
+
+for pkg in "${DEP_UPLOAD_ORDER[@]}"; do
+    upload_pkg "$pkg" "$WORKSPACE_DIR/$pkg"
+done
+
+# --------------------------- 3. fetch scamp's wheels from CI -----------------
+
+SCAMP_VERSION=$(python3 -c "import tomllib; print(tomllib.load(open('$SCAMP_DIR/pyproject.toml','rb'))['project']['version'])")
+
+heading "Step 3: fetch scamp's wheels from CI"
+echo "scamp's wheels come from the 'Build wheels' workflow (the v* tag push triggers it)."
+echo "Because its test-install needs the dependencies above on PyPI, the tag's original run"
+echo "may have failed. Now that the deps are up, trigger a fresh run and download that one."
+
+if confirm "Trigger a fresh scamp 'Build wheels' run now?"; then
+    show_cmd "gh workflow run build-wheels.yml --repo $GH_REPO"
+    gh workflow run build-wheels.yml --repo "$GH_REPO" \
+        && echo "  triggered. Watch it finish with:  gh run watch --repo $GH_REPO"
+fi
+
+echo
+echo "Wait until a run for v$SCAMP_VERSION is green, then download it below."
 echo "Latest 'Build wheels' runs on $GH_REPO:"
 show_cmd "gh run list --repo $GH_REPO --workflow build-wheels.yml --limit 5"
 gh run list --repo "$GH_REPO" --workflow build-wheels.yml --limit 5 || true
@@ -113,7 +205,7 @@ fi
 
 DOWNLOAD_TMP=$(mktemp -d)
 DL_CMD="gh run download $RUN_ID --repo $GH_REPO --dir '$DOWNLOAD_TMP'"
-heading "Step 1a: fetch artifacts from run $RUN_ID"
+heading "Step 3a: fetch artifacts from run $RUN_ID"
 show_cmd "$DL_CMD"
 show_cmd "mkdir -p '$SCAMP_DIR/dist' && find '$DOWNLOAD_TMP' -type f \\( -name '*.whl' -o -name '*.tar.gz' \\) -exec cp {} '$SCAMP_DIR/dist/' \\;"
 if confirm "Download and copy into scamp/dist/?"; then
@@ -124,59 +216,39 @@ if confirm "Download and copy into scamp/dist/?"; then
     echo
     echo "Contents of $SCAMP_DIR/dist after download:"
     ls -1 "$SCAMP_DIR/dist"
+    if ! ls "$SCAMP_DIR"/dist/*"$SCAMP_VERSION"* >/dev/null 2>&1; then
+        echo "  ${c_yellow}WARNING: nothing matching v$SCAMP_VERSION in scamp/dist — did you pick the right run?${c_reset}"
+    fi
 else
     echo "  skipped CI artifact download. Existing scamp/dist contents will be used."
 fi
 
-# ------------------------------------------- 2. build the intel-mac wheel ----
-
-run_step "Step 2: build intel-mac (macosx_12_0_x86_64) wheel locally" \
+run_step "Step 3b: build intel-mac (macosx_12_0_x86_64) wheel locally" \
     "cd '$SCAMP_DIR' && bash scripts/wheel_building/build_macos_12_wheel.sh" || true
 
-# --------------------------------- 3. build pure-python wheels + sdists ------
+# -------------------------------------- 4. upload scamp to PyPI --------------
 
-heading "Step 3: build sdist + wheel for each pure-python package"
-echo "Each package builds with: python -m build  (produces both .whl and .tar.gz in <pkg>/dist/)"
+heading "Step 4: upload scamp to PyPI"
+upload_pkg scamp "$SCAMP_DIR"
 
-for pkg in "${PURE_PKGS[@]}"; do
-    pkg_dir="$WORKSPACE_DIR/$pkg"
-    if [[ ! -d "$pkg_dir" ]]; then
-        echo "  ${c_dim}$pkg_dir not found, skipping.${c_reset}"
-        continue
-    fi
-    run_step "build $pkg" \
-        "cd '$pkg_dir' && rm -rf dist build *.egg-info src/*.egg-info 2>/dev/null; python -m build" \
-        || true
-done
+# --------------------------- 5. upload scamp_extensions to PyPI --------------
 
-# -------------------------------------------- 4. twine upload each package ---
+heading "Step 5: upload scamp_extensions to PyPI"
+echo "scamp_extensions requires scamp, so it goes up last."
+upload_pkg scamp_extensions "$WORKSPACE_DIR/scamp_extensions"
 
-heading "Step 4: twine upload"
-echo "Uploads will be done one package at a time. Confirm each."
-echo "(If you want to test first, you can edit the script to add --repository testpypi.)"
+# ------------------------------------------ 6. publish GitHub releases -------
 
-upload_pkg() {
-    local name="$1" dir="$2"
-    if [[ ! -d "$dir/dist" ]]; then
-        echo "  ${c_dim}$dir/dist does not exist, skipping $name.${c_reset}"
-        return
-    fi
-    heading "Upload: $name"
-    echo "Files in $dir/dist:"
-    ls -1 "$dir/dist"
-    run_step "twine upload $name" \
-        "cd '$dir' && twine check dist/* && twine upload dist/*" \
-        || true
-}
+heading "Step 6: publish GitHub releases"
+echo "For each package: preview the release (dry run), then confirm before publishing."
+echo "Notes come from the package's CHANGELOG; assets (if any) come from its dist/."
 
-# Upload in dependency order, so a package is never on PyPI before something it
-# requires. Otherwise `pip install scamp` fails for anyone who tries during the
-# window between scamp landing and its dependencies following.
+# Order doesn't matter for releases, but reuse the upload order for consistency.
 for pkg in "${UPLOAD_ORDER[@]}"; do
     if [[ "$pkg" == scamp ]]; then
-        upload_pkg scamp "$SCAMP_DIR"
+        publish_gh_release scamp "$SCAMP_DIR"
     else
-        upload_pkg "$pkg" "$WORKSPACE_DIR/$pkg"
+        publish_gh_release "$pkg" "$WORKSPACE_DIR/$pkg"
     fi
 done
 
