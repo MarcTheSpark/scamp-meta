@@ -100,6 +100,8 @@ topics:
     "From live input":
       - scamp: "keyboard_input_with_notation.py"
       - scamp: "run_as_server_render_scores.py"
+    "Other":
+      - scamp_extensions: "note_graph_example.py"
   "Playback":
     "Playback implementations":
       - scamp: "Tutorial/19_playback_implementations.py"
@@ -135,8 +137,6 @@ topics:
       - scamp_extensions: "Composition & form/Algorithmic approaches/conway.py"
       - scamp_extensions: "Composition & form/Larger-scale form/evanstein_barlicity.py"
       - scamp_extensions: "Composition & form/Larger-scale form/leaf_loops.py"
-    "Graphic notation":
-      - scamp_extensions: "note_graph_example.py"
   "Composition & form":
     "Algorithmic approaches":
       - scamp_extensions: "conway.py"

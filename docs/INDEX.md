@@ -182,6 +182,11 @@ The curated teaching set -- work through it in order.
 - **Run as Server and Render Scores** — `scamp:Notation & engraving/From live input/run_as_server_render_scores.py`
   <br>Runs the session as a server, repeatedly recording short fragments and popping up a score for each. — *API:* `Score`, `Session`, `fork`, `new_part`, `play_note`, `run_as_server`, `start_transcribing`, `to_score`
 
+### Other
+
+- **Note Graph** *(scamp_extensions)* — `scamp_extensions:Notation & engraving/Other/note_graph_example.py`
+  <br>Renders a saved Performance two ways: as graphic notation via PartNoteGraph (note height = pitch, width = volume, color = vibrato frequency), and as a traditional quantized score. — *API:* `Performance`, `Score`, `to_score`
+
 
 ## Playback
 
@@ -248,11 +253,6 @@ The curated teaching set -- work through it in order.
 - Conway's Game of Life (pygame version) *(scamp_extensions)* — *(home: `scamp_extensions:Composition & form/Algorithmic approaches/conway.py`)*
 - Barlicity *(scamp_extensions)* — *(home: `scamp_extensions:Composition & form/Larger-scale form/evanstein_barlicity.py`)*
 - Leaf Loops *(scamp_extensions)* — *(home: `scamp_extensions:Composition & form/Larger-scale form/leaf_loops.py`)*
-
-### Graphic notation
-
-- **note graph** *(scamp_extensions)* — `scamp_extensions:Interactivity & visualization/Graphic notation/note_graph_example.py`
-  <br>*API:* `Performance`, `Score`, `to_score`
 
 
 ## Composition & form

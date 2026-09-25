@@ -251,18 +251,30 @@ def order_item(token, unit, by_name, vids, multi):
     return raw_block(video_html(_yt_id(token)))
 
 
+def borrowed_audio(entry):
+    """example_media.toml ``borrow_audio``: media-relative mp3 path(s), rendered by some other
+    example, to embed here (e.g. a graph visualizing another example's audio). Missing ones are
+    skipped, so a page still builds when that example hasn't been rendered."""
+    borrow = entry.get("borrow_audio", [])
+    rels = [borrow] if isinstance(borrow, str) else borrow
+    return [MEDIA_DIR / rel for rel in rels if (MEDIA_DIR / rel).exists()]
+
+
 def body_lines(unit):
     scripts, extra = unit["scripts"], unit.get("extra", [])
     multi = len(scripts) > 1
     vids = unit_videos(unit)
-    order = MEDIA_MANIFEST.get(unit["rel"], {}).get("order")
+    entry = MEDIA_MANIFEST.get(unit["rel"], {})
+    order = entry.get("order")
     if order:
         by_name = {s["name"]: s for s in scripts + extra}
         return [ln for token in order
                 for ln in order_item(token, unit, by_name, vids, multi)]
 
-    score_titles = MEDIA_MANIFEST.get(unit["rel"], {}).get("score_titles", {})
+    score_titles = entry.get("score_titles", {})
     out = [ln for v in vids for ln in raw_block(video_html(v))]
+    for p in borrowed_audio(entry):
+        out += raw_block(audio_html(p))
     for s in scripts:
         for pages in score_pages(s):
             out += raw_block(score_block_html(pages, score_label(pages[0], score_titles)))
@@ -403,7 +415,7 @@ def write_example_page(unit, locations):
         title, "=" * len(title), "", github_line(unit), "", write_download(unit), ""]
     if unit["needs_ext"]:
         out += ["**Requires the** ``scamp_extensions`` **package** "
-                "(``pip install scamp_extensions``)**.**", ""]
+                "(``pip install scamp_extensions``).", ""]
     if unit["summary"]:
         out += [unit["summary"], ""]
     topics = topics_line(unit, locations)

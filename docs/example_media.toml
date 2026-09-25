@@ -13,6 +13,8 @@
 #           order, the default is: videos, then each script's scores, audio, code box.
 #   score_titles  {"<file>.svg" = "..."}  labels a captured score by filename -- for a
 #           score with no title of its own, e.g. a directly-rendered graphic SVG.
+#   borrow_audio  a media-relative mp3 path (or list) rendered by another example, embedded
+#           on this page -- e.g. a graph that visualizes another example's audio.
 # The title, description, and tags always stay at the top of the page.
 
 ["Playback/Other/save_and_load_performance"]
@@ -31,6 +33,9 @@ video = "https://youtu.be/XLG8ooIxS2A"
 
 ["Composition & form/Algorithmic approaches/indispensibility_example.py"]
 video = "https://youtu.be/436LmCJ5BmY"
+
+["Tutorial/25_MIDI_in_out.py"]
+video = "https://youtu.be/yXCvrcxzEs8"
 
 ["Tutorial/26_keyboard_input.py"]
 video = "https://youtu.be/UtSBJ9rk5yw"
@@ -56,5 +61,6 @@ video = "https://youtu.be/DPHPA2dllAQ"
 ["Composition & form/Larger-scale form/leaf_loops.py"]
 video = "https://youtu.be/o2jQEwaLIEQ"
 
-["Interactivity & visualization/Graphic notation/note_graph_example.py"]
-score_titles = { "note_graph_example-2.svg" = "Rendered as graphic notation with color mapping to vibrato frequency" }
+["Notation & engraving/Other/note_graph_example.py"]
+score_titles = { "note_graph_example.svg" = "Rendered as graphic notation with height=pitch, volume=width, & color=vibrato frequency" }
+borrow_audio = "Tutorial/24_osc_to_supercollider/osc_to_supercollider.mp3"

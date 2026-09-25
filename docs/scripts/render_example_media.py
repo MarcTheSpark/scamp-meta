@@ -211,20 +211,21 @@ if "abjad" in open(example).read():          # capture abjad.show, else it pops 
         abjad.show = _capture_abjad_show if score_base else (lambda *a, **k: None)
     except Exception:
         pass
-# Capture any SVGs the example writes to disk directly (e.g. PartNoteGraph.render_to_file)
-# as extra scores, so graphic notation shows in the docs beside the verovio-rendered scores.
-import glob
-_svgs_before = {f: os.path.getmtime(f) for f in glob.glob("*.svg")}
-try:
-    runpy.run_path(example, run_name="__main__")
-finally:
-    if score_base:
-        for _svg in sorted(glob.glob("*.svg")):       # new or rewritten during the run
-            if _svgs_before.get(_svg) == os.path.getmtime(_svg):
-                continue                              # a pre-existing input, not produced now
+# Capture SVGs written via drawsvg (e.g. PartNoteGraph.render_to_file) as scores, in call
+# order, so graphic notation appears in the docs alongside the verovio-rendered scores.
+if score_base:
+    try:
+        import drawsvg
+        _orig_save_svg = drawsvg.Drawing.save_svg
+        def _capture_save_svg(self, fname, *a, **k):
+            _orig_save_svg(self, fname, *a, **k)
             _score_count[0] += 1
-            _suffix = "" if _score_count[0] == 1 else "-%d" % _score_count[0]
-            open(score_base + _suffix + ".svg", "wb").write(open(_svg, "rb").read())
+            suffix = "" if _score_count[0] == 1 else "-%d" % _score_count[0]
+            open(score_base + suffix + ".svg", "wb").write(open(fname, "rb").read())
+        drawsvg.Drawing.save_svg = _capture_save_svg
+    except Exception:
+        pass
+runpy.run_path(example, run_name="__main__")
 """
 
 
