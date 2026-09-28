@@ -397,6 +397,8 @@ def main():
                         help="default Envelope plot size multiplier (default: 1.0)")
     parser.add_argument("--force", action="store_true",
                         help="re-render even if the outputs already exist")
+    parser.add_argument("--skip-audio", action="store_true",
+                        help="render only the score/plot visuals, leaving existing audio untouched")
     args = parser.parse_args()
 
     if shutil.which("ffmpeg") is None:
@@ -408,7 +410,7 @@ def main():
         rel = path.relative_to(examples_root)
         mp3 = MEDIA_DIR / rel.with_suffix(".mp3")
         override = overrides.get(rel.as_posix(), {})
-        skip_audio = override.get("skip_audio", False)
+        skip_audio = override.get("skip_audio", False) or args.skip_audio
         skip_score = override.get("skip_score", False)
         # The primary artifact existing means we've already rendered it (the score, when the
         # audio is hand-made; else the mp3). Scores are (re)captured on that run or with --force.
