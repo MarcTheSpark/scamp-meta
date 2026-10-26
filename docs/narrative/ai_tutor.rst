@@ -17,14 +17,14 @@ preferred open- or closed-source chatbot:
 
 .. code-block:: text
 
-    Read https://marcthespark.github.io/scamp-tutor/tutor.txt. I want you to be my SCAMP tutor,
+    Read https://marcthespark.github.io/scamp-tutor/tutor.html. I want you to be my SCAMP tutor,
     using the instructions and resources described there. On a scale from 1-10, my experience
     levels are as follows: coding 5, python 4, music theory 7, scamp libraries 2.
 
 (Replace the four numbers with your own experience levels, from 1 = none to 10 = expert.)
 
 The tutor has been instructed to guide you, at a level consistent with your current ability and understanding, to
-create SCAMP scripts that you understand. The `file linked to <https://marcthespark.github.io/scamp-tutor/tutor.txt>`_
+create SCAMP scripts that you understand. The `file linked to <https://marcthespark.github.io/scamp-tutor/tutor.html>`_
 is plain text — feel free to read it — and tries to encode principles of good teaching that encourage ownership and
 understanding.
 
@@ -32,7 +32,7 @@ The instructions also link to resources: an indexed, plain-text version of all o
 this website. This way, instead of hallucinating SCAMP-like code from its general training data, it is more likely to
 be helpful and knowledgeable about SCAMP specifically. If you are a more advanced coder and less in need of
 step-by-step tutoring, you can instead simply point your chatbot at the
-`resources <https://marcthespark.github.io/scamp-tutor/resources.txt>`_ directly.
+`resources <https://marcthespark.github.io/scamp-tutor/resources.html>`_ directly.
 
 Happy SCAMPing, and please feel free to `offer feedback <https://scampsters.marcevanstein.com/>`_ on how this
 experimental tutor performs, both in terms of knowledge and its approach to teaching.
