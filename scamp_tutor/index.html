@@ -43,7 +43,7 @@
 
   <div class="prompt">
     <button type="button" onclick="copyPrompt()">Copy</button>
-<pre><code id="prompt-text">Read https://raw.githubusercontent.com/MarcTheSpark/scamp-meta/main/scamp_tutor/instructions.txt. I want you to be my SCAMP tutor, using the instructions and resources described there. On a scale from 1-10, my experience levels are as follows: coding 5, python 4, music theory 7, scamp libraries 2.</code></pre>
+<pre><code id="prompt-text">Read https://raw.githubusercontent.com/MarcTheSpark/scamp-meta/main/scamp_tutor/tutor.txt. I want you to be my SCAMP tutor, using the instructions and resources described there. On a scale from 1-10, my experience levels are as follows: coding 5, python 4, music theory 7, scamp libraries 2.</code></pre>
   </div>
 
   <p class="fill">
@@ -53,12 +53,18 @@
     to do.
   </p>
 
+  <p class="fill">
+    Just want an assistant that knows SCAMP, without the teaching? Point it at
+    <a href="resources.txt">resources.txt</a> instead of <code>tutor.txt</code>.
+  </p>
+
   <h2>What's here</h2>
   <p>
     The assistant fetches these as needed; you don't have to open them yourself.
   </p>
   <ul>
-    <li><a href="instructions.txt">instructions.txt</a> — the tutor's instructions and a map of the resources below.</li>
+    <li><a href="tutor.txt">tutor.txt</a> — the tutor's teaching instructions; points on to resources.txt.</li>
+    <li><a href="resources.txt">resources.txt</a> — a map of the documentation and examples below.</li>
     <li><a href="stumblingBlocks.txt">stumblingBlocks.txt</a> — required reading for the assistant: SCAMP facts that AIs commonly get wrong.</li>
     <li><a href="docs/">docs/</a> — the SCAMP documentation, one text file per package.</li>
     <li><a href="examples/">examples/</a> — real, runnable SCAMP example scripts, plus an index.</li>

@@ -38,7 +38,7 @@ def owner(rel):
 buckets = {p: [] for p in order}
 for f in sorted(src.rglob('*.txt')):
     rel = f.relative_to(src).as_posix()
-    if rel == 'index.txt': continue  # overview lives in instructions.txt instead
+    if rel == 'index.txt': continue  # overview lives in resources.txt instead
     o = owner(rel)
     if o: buckets[o].append((rel, f))
 bar = '=' * 70
