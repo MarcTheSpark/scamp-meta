@@ -41,6 +41,7 @@ and check out the "tutorial" examples found `here <https://github.com/MarcTheSpa
    :caption: Learning Resources:
 
    examples/index
+   narrative/ai_tutor
    narrative/kadenze
    narrative/tutorial_videos
    narrative/note_properties
