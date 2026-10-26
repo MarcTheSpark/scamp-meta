@@ -10,7 +10,7 @@ sphinx documentation and publishing to scamp.marcevanstein.com. (MIGRATION IN PR
 - Scripts for packaging and release
 - Workspace tooling: the uv-workspace `pyproject.toml`, `release.sh`, `uploadDocs.sh`.
 - `.aiconvos/`: topic-organized development notes from conversations with AI coding agents.
-- `scamp_tutor/`: experimental instructions and fetchable text bundles for an AI-based SCAMP tutor.
+- `scamp_tutor/`: instructions and fetchable text bundles for an AI-based SCAMP tutor ([scamp-tutor](https://github.com/MarcTheSpark/scamp-tutor)).
 
 By aggregating all of this here, `git clone --recurse-submodules` hands you the whole interconnected workspace
 while each package keeps its own standalone repo.
@@ -40,7 +40,7 @@ Already cloned without `--recurse-submodules`? Run `git submodule update --init`
 ## Documentation
 
 - Full docs: <https://scamp.marcevanstein.com>
-- AI tutor: <https://scamp.marcevanstein.com/aitutor/>
+- AI tutor: <https://marcthespark.github.io/scamp-tutor/>
 
 ## License
 

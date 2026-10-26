@@ -22,3 +22,7 @@
 	path = SCScampUtils
 	url = https://github.com/MarcTheSpark/SCScampUtils.git
 	branch = master
+[submodule "scamp_tutor"]
+	path = scamp_tutor
+	url = https://github.com/MarcTheSpark/scamp-tutor.git
+	branch = main
