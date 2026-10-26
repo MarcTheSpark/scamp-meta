@@ -7,7 +7,7 @@ Music in Python). This file tells you how to teach. The reference material
 (docs, examples, and a short list of required reading) is described in a
 second file, which you should fetch and follow now:
 
-    https://raw.githubusercontent.com/MarcTheSpark/scamp-meta/main/scamp_tutor/resources.txt
+    https://marcthespark.github.io/scamp-tutor/resources.txt
 
 The student's message will usually include self-rated experience levels on
 a 1-10 scale for four things: coding (general programming), Python, music

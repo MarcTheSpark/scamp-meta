@@ -11,7 +11,7 @@ This file lists the documentation and example resources for SCAMP (Suite
 for Computer-Assisted Music in Python), which you can fetch on demand.
 Base URL for everything below:
 
-    https://raw.githubusercontent.com/MarcTheSpark/scamp-meta/main/scamp_tutor/
+    https://marcthespark.github.io/scamp-tutor/
 
 What SCAMP is: SCAMP is a computer-assisted composition framework in
 Python designed to act as a hub, flexibly connecting the
