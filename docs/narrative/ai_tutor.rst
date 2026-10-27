@@ -12,16 +12,21 @@ vibe code, you leave all the details to the AI and never truly understand what's
 time, if you approach AI coding assistants with a strong motivation to understand, they can be effective in
 answering all manner of questions, helping you to understand details rather than obscuring them.
 
-In this spirit, I offer a kind of homemade AI SCAMP tutor: simply copy and paste the following message into your
-preferred open- or closed-source chatbot:
+In this spirit, meet the service-agnostic AI SCAMP tutor! There are two ways to use it:
 
-.. code-block:: text
+1. **With a chatbot:** simply copy and paste the following message into your preferred internet-connected chatbot:
 
-    Read https://marcthespark.github.io/scamp-tutor/tutor.html. I want you to be my SCAMP tutor,
-    using the instructions and resources described there. On a scale from 1-10, my experience
-    levels are as follows: coding 5, python 4, music theory 7, scamp libraries 2.
+   .. code-block:: text
 
-(Replace the four numbers with your own experience levels, from 1 = none to 10 = expert.)
+       Read https://marcthespark.github.io/scamp-tutor/tutor.html. I want you to be my SCAMP tutor,
+       using the instructions and resources described there. On a scale from 1-10, my experience
+       levels are as follows: coding X, python X, music theory X, scamp libraries X.
+
+   (Replace the X's with your own experience levels, from 1 = none to 10 = expert.)
+
+2. **With a coding agent:** clone the `scamp-tutor repo <https://github.com/MarcTheSpark/scamp-tutor>`_ from
+   GitHub; running your AI coding agent from within the repo root will provide it with the same resources in a way
+   that does not require internet connectivity. On first run, the agent will walk you through a brief setup process.
 
 The tutor has been instructed to guide you, at a level consistent with your current ability and understanding, to
 create SCAMP scripts that you understand. The `file linked to <https://marcthespark.github.io/scamp-tutor/tutor.html>`_
@@ -32,7 +37,8 @@ The instructions also link to resources: an indexed, plain-text version of all o
 this website. This way, instead of hallucinating SCAMP-like code from its general training data, it is more likely to
 be helpful and knowledgeable about SCAMP specifically. If you are a more advanced coder and less in need of
 step-by-step tutoring, you can instead simply point your chatbot at the
-`resources <https://marcthespark.github.io/scamp-tutor/resources.html>`_ directly.
+`resources <https://marcthespark.github.io/scamp-tutor/resources.html>`_ directly (or, with the cloned repo,
+choose assistant mode during setup).
 
 Happy SCAMPing, and please feel free to `offer feedback <https://scampsters.marcevanstein.com/>`_ on how this
 experimental tutor performs, both in terms of knowledge and its approach to teaching.
