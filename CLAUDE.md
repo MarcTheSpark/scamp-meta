@@ -12,7 +12,7 @@ This directory is a workspace containing five sibling Python packages developed 
 - `scamp/` — the main framework. Re-exports symbols from the three packages above and adds `Session`, `Ensemble`, `ScampInstrument`, `Performance`, `Score`, quantization, soundfont/MIDI/OSC playback.
 - `scamp_extensions/` — optional extensions built on top of `scamp` (scales, pitch-class sets, additional I/O conveniences).
 
-The workspace also contains `scamp_tutor/` (submodule, repo `scamp-tutor`) — not a Python package, but the instructions and fetch-on-demand doc bundles for an AI-based SCAMP tutor, served via GitHub Pages at marcthespark.github.io/scamp-tutor/. Its regenerate scripts read from the workspace (`scamp/examples/`, `docs/`), so run them here, then bump the submodule pointer.
+The workspace also contains `scamp_tutor/` (submodule, repo `scamp-tutor`) — not a Python package, but the instructions and fetch-on-demand doc bundles for an AI-based SCAMP tutor, in `scamp_tutor/tutor/`, which GitHub Pages serves at marcthespark.github.io/scamp-tutor/. The scripts that generate its bundles and `.html` copies live in `docs/scripts/tutor/`; after running them, commit in the submodule and bump the pointer. Its `AGENTS.md` / `CLAUDE.md` / `GEMINI.md` are for students who clone the tutor and turn an agent into their tutor; when developing here, ignore them.
 
 When working in `scamp/`, remember that `Clock`, `Envelope`, etc. are imported from `clockblocks` / `expenvelope` — if behavior seems wrong, the bug may live in the sibling package, not in scamp itself.
 
